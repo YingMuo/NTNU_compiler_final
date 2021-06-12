@@ -53,10 +53,13 @@ extern int yydebug;
     VNAME = 259,
     ARRAY_LEN = 260,
     Program_name = 261,
-    Begin = 262,
-    End = 263,
-    DECLARE = 264,
-    AS = 265
+    INTEGER = 262,
+    NUMBER = 263,
+    Begin = 264,
+    End = 265,
+    DECLARE = 266,
+    AS = 267,
+    UMINUS = 268
   };
 #endif
 /* Tokens.  */
@@ -64,23 +67,30 @@ extern int yydebug;
 #define VNAME 259
 #define ARRAY_LEN 260
 #define Program_name 261
-#define Begin 262
-#define End 263
-#define DECLARE 264
-#define AS 265
+#define INTEGER 262
+#define NUMBER 263
+#define Begin 264
+#define End 265
+#define DECLARE 266
+#define AS 267
+#define UMINUS 268
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 10 "parser.y"
+#line 13 "parser.y"
 
     int type;
     char *v_name;
     int array_len;
+    char *integer;
+    char *number;
+    char *rvar;
+    char *lvar;
     char *program_name;
 
-#line 84 "y.tab.h"
+#line 94 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

@@ -1,24 +1,24 @@
 #include "vlist.h"
 #include <stdlib.h>
 
-void vl_push(Vlist **list_head, Value *value)
+void vl_push(Vlist **list_head, Variable *variable)
 {
     Vlist *tmp = malloc(sizeof(Vlist));
-    tmp->value = value;
+    tmp->variable = variable;
     tmp->next = *list_head;
     *list_head = tmp;
 }
 
-Value *vl_pop(Vlist **list_head)
+Variable *vl_pop(Vlist **list_head)
 {
     if (!*list_head)
         return NULL;
     
     Vlist *tmp = *list_head;
-    Value *value = tmp->value;
+    Variable *variable = tmp->variable;
     *list_head = (*list_head)->next;
     free(tmp);
-    return value;
+    return variable;
 }
 
 void vl_reverse(Vlist **list_head)

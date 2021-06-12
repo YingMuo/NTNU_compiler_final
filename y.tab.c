@@ -74,8 +74,11 @@
     Vlist *vlist_head;
     Vlist *i_vlist_head;
     Vlist *f_vlist_head;
+    char *var_delim = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
+    char *num_delim = "0123456789.";
+    char *integer_delim = "0123456789";
 
-#line 79 "y.tab.c"
+#line 82 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -127,10 +130,13 @@ extern int yydebug;
     VNAME = 259,
     ARRAY_LEN = 260,
     Program_name = 261,
-    Begin = 262,
-    End = 263,
-    DECLARE = 264,
-    AS = 265
+    INTEGER = 262,
+    NUMBER = 263,
+    Begin = 264,
+    End = 265,
+    DECLARE = 266,
+    AS = 267,
+    UMINUS = 268
   };
 #endif
 /* Tokens.  */
@@ -138,23 +144,30 @@ extern int yydebug;
 #define VNAME 259
 #define ARRAY_LEN 260
 #define Program_name 261
-#define Begin 262
-#define End 263
-#define DECLARE 264
-#define AS 265
+#define INTEGER 262
+#define NUMBER 263
+#define Begin 264
+#define End 265
+#define DECLARE 266
+#define AS 267
+#define UMINUS 268
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 10 "parser.y"
+#line 13 "parser.y"
 
     int type;
     char *v_name;
     int array_len;
+    char *integer;
+    char *number;
+    char *rvar;
+    char *lvar;
     char *program_name;
 
-#line 158 "y.tab.c"
+#line 171 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -473,19 +486,19 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  4
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   15
+#define YYLAST   30
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  13
+#define YYNTOKENS  22
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  6
+#define YYNNTS  9
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  9
+#define YYNRULES  19
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  19
+#define YYNSTATES  36
 
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   265
+#define YYMAXUTOK   268
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -501,9 +514,9 @@ static const yytype_int8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,    12,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,    11,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,    15,    14,    21,    13,     2,    16,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,    19,    18,
+       2,    20,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -523,14 +536,15 @@ static const yytype_int8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
-       5,     6,     7,     8,     9,    10
+       5,     6,     7,     8,     9,    10,    11,    12,    17
 };
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    24,    24,    36,    37,    40,    47,    48,    51,    63
+       0,    41,    41,    52,    53,    57,    61,    65,    66,    70,
+      71,    72,    73,    74,    80,    86,    90,    96,   105,   114
 };
 #endif
 
@@ -540,8 +554,10 @@ static const yytype_int8 yyrline[] =
 static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "TYPE", "VNAME", "ARRAY_LEN",
-  "Program_name", "Begin", "End", "DECLARE", "AS", "';'", "','", "$accept",
-  "Start", "STMT_LIST", "STMT", "VLIST", "VALUE", YY_NULLPTR
+  "Program_name", "INTEGER", "NUMBER", "Begin", "End", "DECLARE", "AS",
+  "'-'", "'+'", "'*'", "'/'", "UMINUS", "';'", "':'", "'='", "','",
+  "$accept", "Start", "STMT_LIST", "STMT", "VLIST", "EXPR", "DVAR", "LVAR",
+  "RVAR", YY_NULLPTR
 };
 #endif
 
@@ -551,11 +567,12 @@ static const char *const yytname[] =
 static const yytype_int16 yytoknum[] =
 {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,    59,    44
+     265,   266,   267,    45,    43,    42,    47,   268,    59,    58,
+      61,    44
 };
 # endif
 
-#define YYPACT_NINF (-11)
+#define YYPACT_NINF (-13)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -569,8 +586,10 @@ static const yytype_int16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-      -1,    -6,     6,    -2,   -11,     4,     0,   -11,     5,   -10,
-     -11,    -5,   -11,     9,     4,   -11,   -11,   -11,   -11
+      15,    -5,    22,    -1,   -13,   -13,    19,     6,   -13,     7,
+      20,   -12,   -13,    -3,     8,   -13,    24,    19,   -13,   -13,
+      -2,   -13,   -13,   -13,   -13,   -13,     0,   -13,    -2,    -2,
+      -2,    -2,    -4,    -4,   -13,   -13
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -578,20 +597,22 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       0,     0,     0,     0,     1,     0,     0,     3,     8,     0,
-       6,     0,     9,     0,     0,     2,     4,     5,     7
+       0,     0,     0,     0,     1,    18,     0,     0,     3,     0,
+      16,     0,     7,     0,     0,    17,     0,     0,     2,     4,
+       0,     5,     8,    19,    14,    13,     6,    15,     0,     0,
+       0,     0,    10,     9,    11,    12
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -11,   -11,   -11,     2,   -11,     1
+     -13,   -13,   -13,    16,   -13,   -11,    13,   -13,   -13
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     2,     6,     7,     9,    10
+      -1,     2,     7,     8,    11,    26,    12,     9,    27
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -599,34 +620,42 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      13,     3,    14,    15,     5,     1,     4,     5,     8,     0,
-      12,    11,    17,    16,     0,    18
+      16,     5,    23,     5,     3,    24,    25,    18,     6,    17,
+       6,    30,    31,    28,    29,    30,    31,    32,    33,    34,
+      35,     1,     4,    10,    13,    15,    14,    21,    20,    19,
+      22
 };
 
 static const yytype_int8 yycheck[] =
 {
-      10,     7,    12,     8,     9,     6,     0,     9,     4,    -1,
-       5,    11,     3,    11,    -1,    14
+      12,     4,     4,     4,     9,     7,     8,    10,    11,    21,
+      11,    15,    16,    13,    14,    15,    16,    28,    29,    30,
+      31,     6,     0,     4,    18,     5,    19,     3,    20,    13,
+      17
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,     6,    14,     7,     0,     9,    15,    16,     4,    17,
-      18,    11,     5,    10,    12,     8,    16,     3,    18
+       0,     6,    23,     9,     0,     4,    11,    24,    25,    29,
+       4,    26,    28,    18,    19,     5,    12,    21,    10,    25,
+      20,     3,    28,     4,     7,     8,    27,    30,    13,    14,
+      15,    16,    27,    27,    27,    27
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    13,    14,    15,    15,    16,    17,    17,    18,    18
+       0,    22,    23,    24,    24,    25,    25,    26,    26,    27,
+      27,    27,    27,    27,    27,    27,    28,    28,    29,    30
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     5,     1,     3,     4,     1,     3,     1,     2
+       0,     2,     5,     1,     3,     4,     4,     1,     3,     3,
+       3,     3,     3,     1,     1,     1,     1,     2,     1,     1
 };
 
 
@@ -1322,58 +1351,119 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 25 "parser.y"
+#line 42 "parser.y"
         {
             char *endline = strchr((yyvsp[-4].program_name), '\n');
             if (endline)
                 *endline = '\0';
             printf("START %s\n", (yyvsp[-4].program_name)); 
             codegen_var();
-            // print_value(i_vlist_head);
-            // print_value(f_vlist_head);
         }
-#line 1336 "y.tab.c"
+#line 1363 "y.tab.c"
     break;
 
   case 5:
-#line 41 "parser.y"
+#line 58 "parser.y"
         {
-            // printf("TYPE: %d\n", $4);
             save_type_vlist((yyvsp[0].type));
         }
-#line 1345 "y.tab.c"
+#line 1371 "y.tab.c"
     break;
 
-  case 8:
-#line 52 "parser.y"
-        {
-            char *endstring = 0;
-            if (strchr((yyvsp[0].v_name), ' '))
-                endstring = strchr((yyvsp[0].v_name), ' ');
-            if (strchr((yyvsp[0].v_name), ','))
-                endstring = strchr((yyvsp[0].v_name), ',');
-            if (endstring)
-                *endstring = '\0';
-            // printf("VNAME: %s\n", $1); 
-            save_value((yyvsp[0].v_name), 0);
-        }
-#line 1361 "y.tab.c"
+  case 6:
+#line 61 "parser.y"
+                          { printf("LVAR ':' '=' EXPR\n%s + %s\n%s\n%s\n\n", (yyvsp[-3].lvar), (yyvsp[0].rvar), (yyvsp[-3].lvar), (yyvsp[0].rvar)); }
+#line 1377 "y.tab.c"
     break;
 
   case 9:
-#line 64 "parser.y"
+#line 70 "parser.y"
+                      { printf("EXPR '+' EXPR\n%s + %s\n%s\n%s\n\n", (yyvsp[-2].rvar), (yyvsp[0].rvar), (yyvsp[-2].rvar), (yyvsp[0].rvar)); }
+#line 1383 "y.tab.c"
+    break;
+
+  case 10:
+#line 71 "parser.y"
+                      { printf("EXPR '-' EXPR\n%s - %s\n%s\n%s\n\n", (yyvsp[-2].rvar), (yyvsp[0].rvar), (yyvsp[-2].rvar), (yyvsp[0].rvar)); }
+#line 1389 "y.tab.c"
+    break;
+
+  case 11:
+#line 72 "parser.y"
+                      { printf("EXPR '*' EXPR\n%s * %s\n%s\n%s\n\n", (yyvsp[-2].rvar), (yyvsp[0].rvar), (yyvsp[-2].rvar), (yyvsp[0].rvar)); }
+#line 1395 "y.tab.c"
+    break;
+
+  case 12:
+#line 73 "parser.y"
+                      { printf("EXPR '/' EXPR\n%s / %s\n%s\n%s\n\n", (yyvsp[-2].rvar), (yyvsp[0].rvar), (yyvsp[-2].rvar), (yyvsp[0].rvar)); }
+#line 1401 "y.tab.c"
+    break;
+
+  case 13:
+#line 75 "parser.y"
         {
-            char *endstring = strchr((yyvsp[-1].v_name), '[');
-            if (endstring)
-                *endstring = 0;
-            // printf("VNAME: %s, ARRAY_LEN: %d\n", $1, $2);
-            save_value((yyvsp[-1].v_name), (yyvsp[0].array_len));
+            int len = strspn((yyvsp[0].number), num_delim);
+            (yyvsp[0].number)[len] = '\0';
+            (yyval.rvar) = (yyvsp[0].number);
         }
-#line 1373 "y.tab.c"
+#line 1411 "y.tab.c"
+    break;
+
+  case 14:
+#line 81 "parser.y"
+        {
+            int len = strspn((yyvsp[0].integer), integer_delim);
+            (yyvsp[0].integer)[len] = '\0';
+            (yyval.rvar) = (yyvsp[0].integer);
+        }
+#line 1421 "y.tab.c"
+    break;
+
+  case 16:
+#line 91 "parser.y"
+        {
+            int len = strspn((yyvsp[0].v_name), var_delim);
+            (yyvsp[0].v_name)[len] = '\0';
+            save_variable((yyvsp[0].v_name), 0);
+        }
+#line 1431 "y.tab.c"
+    break;
+
+  case 17:
+#line 97 "parser.y"
+        {
+            int len = strspn((yyvsp[-1].v_name), var_delim);
+            (yyvsp[-1].v_name)[len] = '\0';
+            save_variable((yyvsp[-1].v_name), (yyvsp[0].array_len));
+        }
+#line 1441 "y.tab.c"
+    break;
+
+  case 18:
+#line 106 "parser.y"
+        {
+            int len = strspn((yyvsp[0].v_name), var_delim);
+            (yyvsp[0].v_name)[len] = '\0';
+            printf("LVAR\n%s, %d\n\n", (yyvsp[0].v_name), len);
+            (yyval.lvar) = (yyvsp[0].v_name);
+        }
+#line 1452 "y.tab.c"
+    break;
+
+  case 19:
+#line 115 "parser.y"
+        {
+            int len = strspn((yyvsp[0].v_name), var_delim);
+            (yyvsp[0].v_name)[len] = '\0';
+            printf("RVAR\n%s, %d\n\n", (yyvsp[0].v_name), len);
+            (yyval.rvar) = (yyvsp[0].v_name);
+        }
+#line 1463 "y.tab.c"
     break;
 
 
-#line 1377 "y.tab.c"
+#line 1467 "y.tab.c"
 
       default: break;
     }
@@ -1605,55 +1695,26 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 73 "parser.y"
+#line 121 "parser.y"
 
-// save value
-void save_value(char *v_name, int array_len)
+// save variable
+void save_variable(char *v_name, int array_len)
 {
-    Value *tmp = malloc(sizeof(Value));
+    Variable *tmp = malloc(sizeof(Variable));
     tmp->v_name = strdup(v_name);
     tmp->array_len = array_len;
     vl_push(&vlist_head, tmp);
 }
 
-// print value
-void print_value(Vlist *list_head)
+// print variable
+void print_variable(Vlist *list_head)
 {
     Vlist *tmp = list_head;
     while (tmp)
     {
-        Value *value = tmp->value;
-        printf("VNAME: %s, ARRAY_LEN: %d\n", value->v_name, value->array_len);
+        Variable *variable = tmp->variable;
+        printf("VNAME: %s, ARRAY_LEN: %d\n", variable->v_name, variable->array_len);
         tmp = tmp->next;
-    }
-}
-
-// save vlist
-void save_vlist(int type)
-{
-    vll_push(&vllist_head, type, vlist_head);
-    vlist_head = NULL;
-}
-
-// print vlist
-void print_vlist()
-{
-    while (vllist_head)
-    {
-        int type = vllist_head->type;
-        Vlist *list = vll_pop(&vllist_head);
-        while (list)
-        {
-            Value *value = vl_pop(&list);
-            if (type == 1)
-                printf("type: integer, VNAME: %s, ARRAY_LEN: %d\n", value->v_name, value->array_len);
-            else if (type == 2)
-                printf("type: float, VNAME: %s, ARRAY_LEN: %d\n", value->v_name, value->array_len);
-            else
-                printf("type error, VNAME: %s, ARRAY_LEN: %d\n", value->v_name, value->array_len);
-            free(value);
-        }
-        free(list);
     }
 }
 
@@ -1671,21 +1732,21 @@ void codegen_var()
 {
     while (i_vlist_head)
     {
-        Value *value = vl_pop(&i_vlist_head);
-        if (value->array_len)
-            printf("Declare %s, Integer_array, %d\n", value->v_name, value->array_len);
+        Variable *variable = vl_pop(&i_vlist_head);
+        if (variable->array_len)
+            printf("Declare %s, Integer_array, %d\n", variable->v_name, variable->array_len);
         else
-            printf("Declare %s, Integer\n", value->v_name);
-        free(value);
+            printf("Declare %s, Integer\n", variable->v_name);
+        free(variable);
     }
 
     while (f_vlist_head)
     {
-        Value *value = vl_pop(&f_vlist_head);
-        if (value->array_len)
-            printf("Declare %s, Float_array, %d\n", value->v_name, value->array_len);
+        Variable *variable = vl_pop(&f_vlist_head);
+        if (variable->array_len)
+            printf("Declare %s, Float_array, %d\n", variable->v_name, variable->array_len);
         else
-            printf("Declare %s, Float\n", value->v_name);
-        free(value);
+            printf("Declare %s, Float\n", variable->v_name);
+        free(variable);
     }
 }
