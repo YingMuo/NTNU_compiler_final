@@ -53,8 +53,8 @@ extern int yydebug;
     VNAME = 259,
     ARRAY_LEN = 260,
     Program_name = 261,
-    INTEGER = 262,
-    NUMBER = 263,
+    INT_LIT = 262,
+    NUM_LIT = 263,
     Begin = 264,
     End = 265,
     DECLARE = 266,
@@ -67,8 +67,8 @@ extern int yydebug;
 #define VNAME 259
 #define ARRAY_LEN 260
 #define Program_name 261
-#define INTEGER 262
-#define NUMBER 263
+#define INT_LIT 262
+#define NUM_LIT 263
 #define Begin 264
 #define End 265
 #define DECLARE 266
@@ -79,13 +79,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 13 "parser.y"
+#line 22 "parser.y"
 
     int type;
     char *v_name;
     int array_len;
-    char *integer;
-    char *number;
+    char *int_lit;
+    char *num_lit;
     char *rvar;
     char *lvar;
     char *program_name;

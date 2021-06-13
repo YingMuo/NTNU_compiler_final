@@ -21,19 +21,18 @@
 [Ff][Ll][Oo][Aa][Tt] { yylval.type=2; return TYPE; }
 
 [0-9]+\.[0-9]* {
-    yylval.number = yytext;
-    return NUMBER;
+    yylval.num_lit = yytext;
+    return NUM_LIT;
     }
 [1-9][0-9]* {
-    yylval.integer = yytext;
-    return INTEGER;
+    yylval.int_lit = yytext;
+    return INT_LIT;
     }
 
 [A-Za-z][A-Za-z0-9_]* {
     yylval.v_name = yytext;
     return VNAME;
     }
-\[[1-9][0-9]*\] { yylval.array_len = atoi(&yytext[1]); return ARRAY_LEN; }
 
 <<EOF>> { return 0; }
 

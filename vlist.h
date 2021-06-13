@@ -12,13 +12,6 @@ typedef struct _list
     struct _list *next;
 } Vlist;
 
-typedef struct _llist
-{
-    int type;
-    Vlist *list;
-    struct _llist *next;
-} Vllist;
-
 void vl_push(Vlist **list_head, Variable *variable);
 Variable *vl_pop(Vlist **list_head);
 void vl_reverse(Vlist **list_head);
