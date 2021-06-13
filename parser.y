@@ -73,7 +73,18 @@ STMT
             tok_spn(&arg1, $1, VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
             tok_spn(&arg2, $4, VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
 
-            printf("STORE %s, %s\n", arg1, arg2);
+            int type1 = 0, type2 = 0;
+            get_expr_type(&type1, arg1);
+            get_expr_type(&type2, arg2);
+
+            if (type1 == 1 && type2 == 2)
+                yyerror("LVAR ':' '=' EXPR LVAR is int and EXPR is float");
+            else if (type1 == 1 && type2 == 1 )
+                printf("I_STORE %s, %s\n", arg1, arg2);
+            else if (type1 == 2 && type2 & 3)
+                printf("F_STORE %s, %s\n", arg1, arg2);
+            else
+                yyerror ("LVAR ':' '=' EXPR type error");
         }
     ;
 
@@ -88,9 +99,27 @@ EXPR
             char *arg1, *arg2, *arg3;
             tok_spn(&arg1, $1, VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
             tok_spn(&arg2, $3, VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            gen_tmp_var(&arg3);
 
-            printf("ADD %s, %s, %s\n", arg1, arg2, arg3);
+            int type1 = 0, type2 = 0, type3 = 0;
+            get_expr_type(&type1, arg1);
+            get_expr_type(&type2, arg2);
+
+            if (!type1 || !type2)
+                yyerror("EXPR '+' EXPR type error");
+            
+            if ((type1 | type2) & 2)
+                type3 = 2;
+            else if (type1 & type2 == 1)
+                type3 = 1;
+            
+            gen_tmp_var(&arg3, type3);
+
+            if (type3 == 1)
+                printf("I_ADD %s, %s, %s\n", arg1, arg2, arg3);
+            else if (type3 == 2)
+                printf("F_ADD %s, %s, %s\n", arg1, arg2, arg3);
+            else
+                yyerror("EXPR '+' EXPR type error");
             $$ = arg3;
         }
     |   EXPR '-' EXPR
@@ -98,9 +127,27 @@ EXPR
             char *arg1, *arg2, *arg3;
             tok_spn(&arg1, $1, VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
             tok_spn(&arg2, $3, VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            gen_tmp_var(&arg3);
 
-            printf("SUB %s, %s, %s\n", arg1, arg2, arg3);
+            int type1 = 0, type2 = 0, type3 = 0;
+            get_expr_type(&type1, arg1);
+            get_expr_type(&type2, arg2);
+
+            if (!type1 || !type2)
+                yyerror("EXPR '-' EXPR type error");
+            
+            if ((type1 | type2) & 2)
+                type3 = 2;
+            else if (type1 & type2 == 1)
+                type3 = 1;
+            
+            gen_tmp_var(&arg3, type3);
+
+            if (type3 == 1)
+                printf("I_SUB %s, %s, %s\n", arg1, arg2, arg3);
+            else if (type3 == 2)
+                printf("F_SUB %s, %s, %s\n", arg1, arg2, arg3);
+            else
+                yyerror("EXPR '-' EXPR type error");
             $$ = arg3;
         }
     |   EXPR '*' EXPR
@@ -108,9 +155,27 @@ EXPR
             char *arg1, *arg2, *arg3;
             tok_spn(&arg1, $1, VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
             tok_spn(&arg2, $3, VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            gen_tmp_var(&arg3);
 
-            printf("MUL %s, %s, %s\n", arg1, arg2, arg3);
+            int type1 = 0, type2 = 0, type3 = 0;
+            get_expr_type(&type1, arg1);
+            get_expr_type(&type2, arg2);
+
+            if (!type1 || !type2)
+                yyerror("EXPR '*' EXPR type error");
+            
+            if ((type1 | type2) & 2)
+                type3 = 2;
+            else if (type1 & type2 == 1)
+                type3 = 1;
+            
+            gen_tmp_var(&arg3, type3);
+
+            if (type3 == 1)
+                printf("I_MUL %s, %s, %s\n", arg1, arg2, arg3);
+            else if (type3 == 2)
+                printf("F_MUL %s, %s, %s\n", arg1, arg2, arg3);
+            else
+                yyerror("EXPR '*' EXPR type error");
             $$ = arg3;
         }
     |   EXPR '/' EXPR
@@ -118,18 +183,53 @@ EXPR
             char *arg1, *arg2, *arg3;
             tok_spn(&arg1, $1, VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
             tok_spn(&arg2, $3, VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            gen_tmp_var(&arg3);
 
-            printf("DIV %s, %s, %s\n", arg1, arg2, arg3);
+            int type1 = 0, type2 = 0, type3 = 0;
+            get_expr_type(&type1, arg1);
+            get_expr_type(&type2, arg2);
+
+            if (!type1 || !type2)
+                yyerror("EXPR '/' EXPR type error");
+            
+            if ((type1 | type2) & 2)
+                type3 = 2;
+            else if (type1 & type2 == 1)
+                type3 = 1;
+            
+            gen_tmp_var(&arg3, type3);
+
+            if (type3 == 1)
+                printf("I_DIV %s, %s, %s\n", arg1, arg2, arg3);
+            else if (type3 == 2)
+                printf("F_DIV %s, %s, %s\n", arg1, arg2, arg3);
+            else
+                yyerror("EXPR '/' EXPR type error");
             $$ = arg3;
         }
     |	'-' EXPR %prec UMINUS
         {
             char *arg1, *arg2;
             tok_spn(&arg1, $2, VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            gen_tmp_var(&arg2);
 
-            printf("UMINUS %s, %s\n", arg1, arg2);
+            int type1 = 0, type2 = 0;
+            get_expr_type(&type1, arg1);
+
+            if (!type1)
+                yyerror("'-' EXPR %prec UMINUS type error");
+            
+            if (type1 & 2)
+                type2 = 2;
+            else if (type1 & 1)
+                type2 = 1;
+            
+            gen_tmp_var(&arg2, type2);
+
+            if (type2 == 1)
+                printf("I_UMINUS %s, %s\n", arg1, arg2);
+            else if (type2 == 2)
+                printf("F_UMINUS %s, %s\n", arg1, arg2);
+            else
+                yyerror("'-' EXPR %prec UMINUS type error");
             $$ = arg2;
         }
 	|	'(' EXPR ')' { $$ = $2; }
@@ -279,7 +379,7 @@ void gen_arr_lit(char **arr_lit, char *vname, char *size)
 }
 
 // generate tmp variable
-void gen_tmp_var(char **tmp_var)
+void gen_tmp_var(char **tmp_var, int type)
 {
     char num[7] = {0};
     sprintf(num, "%d", tmp_val_idx);
@@ -288,4 +388,62 @@ void gen_tmp_var(char **tmp_var)
     *(*tmp_var+1) = '&';
     strncat(*tmp_var, num, 6);
     ++tmp_val_idx;
+
+    save_variable(*tmp_var, 0);
+    save_type_vlist(type);
+}
+
+void get_expr_type(int *type, char *expr)
+{
+    // printf("expr = %s\n", expr);
+    int len = 0;
+    if (len <= strspn(expr, var_delim))
+    {
+        len = strspn(expr, var_delim);
+        *type = 0;
+        // printf("var\n");
+    }
+    if (len <= strspn(expr, num_lit_delim))
+    {
+        len = strspn(expr, num_lit_delim);
+        *type = 2;
+        // printf("num_lit\n");
+    }
+    if (len <= strspn(expr, int_lit_delim))
+    {
+        len = strspn(expr, int_lit_delim);
+        *type = 1;
+        // printf("int_lit\n");
+    }
+
+    if (*type == 0)
+    {
+        Vlist *tmp = NULL;
+
+        tmp = i_vlist_head;
+        while (tmp)
+        {
+            Variable *variable = tmp->variable;
+            if (strncmp(expr, variable->v_name, len) == 0)
+            {
+                // printf("catch = %s\n", variable->v_name);
+                *type = 1;
+                return;
+            }
+            tmp = tmp->next;
+        }
+
+        tmp = f_vlist_head;
+        while (tmp)
+        {
+            Variable *variable = tmp->variable;
+            if (strncmp(expr, variable->v_name, len) == 0)
+            {
+                // printf("catch = %s\n", variable->v_name);
+                *type = 2;
+                return;
+            }
+            tmp = tmp->next;
+        }
+    }
 }

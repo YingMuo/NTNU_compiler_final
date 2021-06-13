@@ -550,11 +550,11 @@ static const yytype_int8 yytranslate[] =
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_uint8 yyrline[] =
+static const yytype_int16 yyrline[] =
 {
-       0,    50,    50,    61,    62,    66,    70,    81,    82,    86,
-      96,   106,   116,   126,   135,   136,   142,   148,   152,   158,
-     168,   174,   185,   191
+       0,    50,    50,    61,    62,    66,    70,    92,    93,    97,
+     125,   153,   181,   209,   235,   236,   242,   248,   252,   258,
+     268,   274,   285,   291
 };
 #endif
 
@@ -1396,139 +1396,239 @@ yyreduce:
             tok_spn(&arg1, (yyvsp[-3].lvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
             tok_spn(&arg2, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
 
-            printf("STORE %s, %s\n", arg1, arg2);
+            int type1 = 0, type2 = 0;
+            get_expr_type(&type1, arg1);
+            get_expr_type(&type2, arg2);
+
+            if (type1 == 1 && type2 == 2)
+                yyerror("LVAR ':' '=' EXPR LVAR is int and EXPR is float");
+            else if (type1 == 1 && type2 == 1 )
+                printf("I_STORE %s, %s\n", arg1, arg2);
+            else if (type1 == 2 && type2 & 3)
+                printf("F_STORE %s, %s\n", arg1, arg2);
+            else
+                yyerror ("LVAR ':' '=' EXPR type error");
         }
-#line 1402 "y.tab.c"
+#line 1413 "y.tab.c"
     break;
 
   case 9:
-#line 87 "parser.y"
+#line 98 "parser.y"
         {
             char *arg1, *arg2, *arg3;
             tok_spn(&arg1, (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
             tok_spn(&arg2, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            gen_tmp_var(&arg3);
 
-            printf("ADD %s, %s, %s\n", arg1, arg2, arg3);
+            int type1 = 0, type2 = 0, type3 = 0;
+            get_expr_type(&type1, arg1);
+            get_expr_type(&type2, arg2);
+
+            if (!type1 || !type2)
+                yyerror("EXPR '+' EXPR type error");
+            
+            if ((type1 | type2) & 2)
+                type3 = 2;
+            else if (type1 & type2 == 1)
+                type3 = 1;
+            
+            gen_tmp_var(&arg3, type3);
+
+            if (type3 == 1)
+                printf("I_ADD %s, %s, %s\n", arg1, arg2, arg3);
+            else if (type3 == 2)
+                printf("F_ADD %s, %s, %s\n", arg1, arg2, arg3);
+            else
+                yyerror("EXPR '+' EXPR type error");
             (yyval.rvar) = arg3;
         }
-#line 1416 "y.tab.c"
+#line 1445 "y.tab.c"
     break;
 
   case 10:
-#line 97 "parser.y"
+#line 126 "parser.y"
         {
             char *arg1, *arg2, *arg3;
             tok_spn(&arg1, (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
             tok_spn(&arg2, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            gen_tmp_var(&arg3);
 
-            printf("SUB %s, %s, %s\n", arg1, arg2, arg3);
+            int type1 = 0, type2 = 0, type3 = 0;
+            get_expr_type(&type1, arg1);
+            get_expr_type(&type2, arg2);
+
+            if (!type1 || !type2)
+                yyerror("EXPR '-' EXPR type error");
+            
+            if ((type1 | type2) & 2)
+                type3 = 2;
+            else if (type1 & type2 == 1)
+                type3 = 1;
+            
+            gen_tmp_var(&arg3, type3);
+
+            if (type3 == 1)
+                printf("I_SUB %s, %s, %s\n", arg1, arg2, arg3);
+            else if (type3 == 2)
+                printf("F_SUB %s, %s, %s\n", arg1, arg2, arg3);
+            else
+                yyerror("EXPR '-' EXPR type error");
             (yyval.rvar) = arg3;
         }
-#line 1430 "y.tab.c"
-    break;
-
-  case 11:
-#line 107 "parser.y"
-        {
-            char *arg1, *arg2, *arg3;
-            tok_spn(&arg1, (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            tok_spn(&arg2, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            gen_tmp_var(&arg3);
-
-            printf("MUL %s, %s, %s\n", arg1, arg2, arg3);
-            (yyval.rvar) = arg3;
-        }
-#line 1444 "y.tab.c"
-    break;
-
-  case 12:
-#line 117 "parser.y"
-        {
-            char *arg1, *arg2, *arg3;
-            tok_spn(&arg1, (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            tok_spn(&arg2, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            gen_tmp_var(&arg3);
-
-            printf("DIV %s, %s, %s\n", arg1, arg2, arg3);
-            (yyval.rvar) = arg3;
-        }
-#line 1458 "y.tab.c"
-    break;
-
-  case 13:
-#line 127 "parser.y"
-        {
-            char *arg1, *arg2;
-            tok_spn(&arg1, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            gen_tmp_var(&arg2);
-
-            printf("UMINUS %s, %s\n", arg1, arg2);
-            (yyval.rvar) = arg2;
-        }
-#line 1471 "y.tab.c"
-    break;
-
-  case 14:
-#line 135 "parser.y"
-                             { (yyval.rvar) = (yyvsp[-1].rvar); }
 #line 1477 "y.tab.c"
     break;
 
+  case 11:
+#line 154 "parser.y"
+        {
+            char *arg1, *arg2, *arg3;
+            tok_spn(&arg1, (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+            tok_spn(&arg2, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+
+            int type1 = 0, type2 = 0, type3 = 0;
+            get_expr_type(&type1, arg1);
+            get_expr_type(&type2, arg2);
+
+            if (!type1 || !type2)
+                yyerror("EXPR '*' EXPR type error");
+            
+            if ((type1 | type2) & 2)
+                type3 = 2;
+            else if (type1 & type2 == 1)
+                type3 = 1;
+            
+            gen_tmp_var(&arg3, type3);
+
+            if (type3 == 1)
+                printf("I_MUL %s, %s, %s\n", arg1, arg2, arg3);
+            else if (type3 == 2)
+                printf("F_MUL %s, %s, %s\n", arg1, arg2, arg3);
+            else
+                yyerror("EXPR '*' EXPR type error");
+            (yyval.rvar) = arg3;
+        }
+#line 1509 "y.tab.c"
+    break;
+
+  case 12:
+#line 182 "parser.y"
+        {
+            char *arg1, *arg2, *arg3;
+            tok_spn(&arg1, (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+            tok_spn(&arg2, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+
+            int type1 = 0, type2 = 0, type3 = 0;
+            get_expr_type(&type1, arg1);
+            get_expr_type(&type2, arg2);
+
+            if (!type1 || !type2)
+                yyerror("EXPR '/' EXPR type error");
+            
+            if ((type1 | type2) & 2)
+                type3 = 2;
+            else if (type1 & type2 == 1)
+                type3 = 1;
+            
+            gen_tmp_var(&arg3, type3);
+
+            if (type3 == 1)
+                printf("I_DIV %s, %s, %s\n", arg1, arg2, arg3);
+            else if (type3 == 2)
+                printf("F_DIV %s, %s, %s\n", arg1, arg2, arg3);
+            else
+                yyerror("EXPR '/' EXPR type error");
+            (yyval.rvar) = arg3;
+        }
+#line 1541 "y.tab.c"
+    break;
+
+  case 13:
+#line 210 "parser.y"
+        {
+            char *arg1, *arg2;
+            tok_spn(&arg1, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+
+            int type1 = 0, type2 = 0;
+            get_expr_type(&type1, arg1);
+
+            if (!type1)
+                yyerror("'-' EXPR %prec UMINUS type error");
+            
+            if (type1 & 2)
+                type2 = 2;
+            else if (type1 & 1)
+                type2 = 1;
+            
+            gen_tmp_var(&arg2, type2);
+
+            if (type2 == 1)
+                printf("I_UMINUS %s, %s\n", arg1, arg2);
+            else if (type2 == 2)
+                printf("F_UMINUS %s, %s\n", arg1, arg2);
+            else
+                yyerror("'-' EXPR %prec UMINUS type error");
+            (yyval.rvar) = arg2;
+        }
+#line 1571 "y.tab.c"
+    break;
+
+  case 14:
+#line 235 "parser.y"
+                             { (yyval.rvar) = (yyvsp[-1].rvar); }
+#line 1577 "y.tab.c"
+    break;
+
   case 15:
-#line 137 "parser.y"
+#line 237 "parser.y"
         {
             int len = strspn((yyvsp[0].num_lit), num_lit_delim);
             (yyvsp[0].num_lit)[len] = '\0';
             (yyval.rvar) = (yyvsp[0].num_lit);
         }
-#line 1487 "y.tab.c"
+#line 1587 "y.tab.c"
     break;
 
   case 16:
-#line 143 "parser.y"
+#line 243 "parser.y"
         {
             int len = strspn((yyvsp[0].int_lit), int_lit_delim);
             (yyvsp[0].int_lit)[len] = '\0';
             (yyval.rvar) = (yyvsp[0].int_lit);
         }
-#line 1497 "y.tab.c"
+#line 1597 "y.tab.c"
     break;
 
   case 18:
-#line 153 "parser.y"
+#line 253 "parser.y"
         {
             int len = strspn((yyvsp[0].v_name), var_delim);
             (yyvsp[0].v_name)[len] = '\0';
             save_variable((yyvsp[0].v_name), 0);
         }
-#line 1507 "y.tab.c"
+#line 1607 "y.tab.c"
     break;
 
   case 19:
-#line 159 "parser.y"
+#line 259 "parser.y"
         {
             int len = strspn((yyvsp[-3].v_name), var_delim);
             (yyvsp[-3].v_name)[len] = '\0';
             int arr_len = atoi((yyvsp[-1].int_lit));
             save_variable((yyvsp[-3].v_name), arr_len);
         }
-#line 1518 "y.tab.c"
+#line 1618 "y.tab.c"
     break;
 
   case 20:
-#line 169 "parser.y"
+#line 269 "parser.y"
         {
             int len = strspn((yyvsp[0].v_name), var_delim);
             (yyvsp[0].v_name)[len] = '\0';
             (yyval.lvar) = (yyvsp[0].v_name);
         }
-#line 1528 "y.tab.c"
+#line 1628 "y.tab.c"
     break;
 
   case 21:
-#line 175 "parser.y"
+#line 275 "parser.y"
         {
             char *arr_lit, *vname, *size;
             tok_spn(&vname, (yyvsp[-3].v_name), VAR_DELIM);
@@ -1536,21 +1636,21 @@ yyreduce:
             gen_arr_lit(&arr_lit, vname, size);
             (yyval.lvar) = arr_lit;
         }
-#line 1540 "y.tab.c"
+#line 1640 "y.tab.c"
     break;
 
   case 22:
-#line 186 "parser.y"
+#line 286 "parser.y"
         {
             int len = strspn((yyvsp[0].v_name), var_delim);
             (yyvsp[0].v_name)[len] = '\0';
             (yyval.rvar) = (yyvsp[0].v_name);
         }
-#line 1550 "y.tab.c"
+#line 1650 "y.tab.c"
     break;
 
   case 23:
-#line 192 "parser.y"
+#line 292 "parser.y"
         {
             char *arr_lit, *vname, *size;
             tok_spn(&vname, (yyvsp[-3].v_name), VAR_DELIM);
@@ -1558,11 +1658,11 @@ yyreduce:
             gen_arr_lit(&arr_lit, vname, size);
             (yyval.rvar) = arr_lit;
         }
-#line 1562 "y.tab.c"
+#line 1662 "y.tab.c"
     break;
 
 
-#line 1566 "y.tab.c"
+#line 1666 "y.tab.c"
 
       default: break;
     }
@@ -1794,7 +1894,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 200 "parser.y"
+#line 300 "parser.y"
 
 // save variable
 void save_variable(char *v_name, int array_len)
@@ -1877,7 +1977,7 @@ void gen_arr_lit(char **arr_lit, char *vname, char *size)
 }
 
 // generate tmp variable
-void gen_tmp_var(char **tmp_var)
+void gen_tmp_var(char **tmp_var, int type)
 {
     char num[7] = {0};
     sprintf(num, "%d", tmp_val_idx);
@@ -1886,4 +1986,62 @@ void gen_tmp_var(char **tmp_var)
     *(*tmp_var+1) = '&';
     strncat(*tmp_var, num, 6);
     ++tmp_val_idx;
+
+    save_variable(*tmp_var, 0);
+    save_type_vlist(type);
+}
+
+void get_expr_type(int *type, char *expr)
+{
+    // printf("expr = %s\n", expr);
+    int len = 0;
+    if (len <= strspn(expr, var_delim))
+    {
+        len = strspn(expr, var_delim);
+        *type = 0;
+        // printf("var\n");
+    }
+    if (len <= strspn(expr, num_lit_delim))
+    {
+        len = strspn(expr, num_lit_delim);
+        *type = 2;
+        // printf("num_lit\n");
+    }
+    if (len <= strspn(expr, int_lit_delim))
+    {
+        len = strspn(expr, int_lit_delim);
+        *type = 1;
+        // printf("int_lit\n");
+    }
+
+    if (*type == 0)
+    {
+        Vlist *tmp = NULL;
+
+        tmp = i_vlist_head;
+        while (tmp)
+        {
+            Variable *variable = tmp->variable;
+            if (strncmp(expr, variable->v_name, len) == 0)
+            {
+                // printf("catch = %s\n", variable->v_name);
+                *type = 1;
+                return;
+            }
+            tmp = tmp->next;
+        }
+
+        tmp = f_vlist_head;
+        while (tmp)
+        {
+            Variable *variable = tmp->variable;
+            if (strncmp(expr, variable->v_name, len) == 0)
+            {
+                // printf("catch = %s\n", variable->v_name);
+                *type = 2;
+                return;
+            }
+            tmp = tmp->next;
+        }
+    }
 }

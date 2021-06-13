@@ -2,7 +2,7 @@
 Program testP
 
 Begin
-    declare I as integer;
+    declare I, E, F, G as integer;
     declare A,B,C,D, LLL[100] as float;
-    A:=-LLL[I]+B*D-C;
+    A:=(-LLL[I]+B)*D-C+100+100.11;
 End
