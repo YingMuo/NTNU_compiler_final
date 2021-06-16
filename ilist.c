@@ -1,30 +1,30 @@
-#include "ilist.h"
+#include "vlist.h"
 #include <stdlib.h>
 
-void il_push(Ilist **list_head, Instr *instr)
+void vl_push(Vlist **list_head, Variable *variable)
 {
-    Ilist *tmp = malloc(sizeof(Ilist));
-    tmp->instr = instr;
+    Vlist *tmp = malloc(sizeof(Vlist));
+    tmp->variable = variable;
     tmp->next = *list_head;
     *list_head = tmp;
 }
 
-Instr *il_pop(Ilist **list_head)
+Variable *vl_pop(Vlist **list_head)
 {
     if (!*list_head)
         return NULL;
     
-    Ilist *tmp = *list_head;
-    Instr *instr = tmp->instr;
+    Vlist *tmp = *list_head;
+    Variable *variable = tmp->variable;
     *list_head = (*list_head)->next;
     free(tmp);
-    return instr;
+    return variable;
 }
 
-void il_reverse(Ilist **list_head)
+void vl_reverse(Vlist **list_head)
 {
-    Ilist *tmp = NULL;
-    Ilist *next = NULL;
+    Vlist *tmp = NULL;
+    Vlist *next = NULL;
     while (*list_head)
     {
         next = (*list_head)->next;
@@ -35,9 +35,9 @@ void il_reverse(Ilist **list_head)
     *list_head = tmp;
 }
 
-void il_concat(Ilist **a, Ilist **b)
+void vl_concat(Vlist **a, Vlist **b)
 {
-    Ilist *next = NULL;
+    Vlist *next = NULL;
     while (*b)
     {
         next = (*b)->next;

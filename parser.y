@@ -1,12 +1,16 @@
 %{
     #include <string.h>
     #include "vlist.h"
+    #include "ilist.h"
 
     Vlist *vlist_head;
     Vlist *i_vlist_head;
     Vlist *f_vlist_head;
 
     int tmp_val_idx = 1;
+
+    Ilist *ilist_head;
+    Ilist *for_ilist_head;
 
     char *var_delim = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_&";
     char *arr_lit_delim = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_&[]";
