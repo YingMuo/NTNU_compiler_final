@@ -1,48 +1,64 @@
-#include "ilist.h"
+#include "vlist.h"
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
-void il_push(Ilist **list_head, Instr *instr)
+bool vl_add(Vlist *head, char *vname, int arr_len)
 {
-    Ilist *tmp = malloc(sizeof(Ilist));
-    tmp->instr = instr;
-    tmp->next = *list_head;
-    *list_head = tmp;
-}
-
-Instr *il_pop(Ilist **list_head)
-{
-    if (!*list_head)
-        return NULL;
+    if (!head)
+        return false;
     
-    Ilist *tmp = *list_head;
-    Instr *instr = tmp->instr;
-    *list_head = (*list_head)->next;
-    free(tmp);
-    return instr;
-}
+    Var *new_var = malloc(sizeof(Var));
+    if (!new_var)
+        return false;
 
-void il_reverse(Ilist **list_head)
-{
-    Ilist *tmp = NULL;
-    Ilist *next = NULL;
-    while (*list_head)
+    char *new_vname = strdup(vname);
+    if (!new_vname)
     {
-        next = (*list_head)->next;
-        (*list_head)->next = tmp;
-        tmp = *list_head;
-        (*list_head) = next;
+        free(new_var);
+        return false;
     }
-    *list_head = tmp;
+
+    new_var->vname = new_vname;
+    new_var->arr_len = arr_len;
+    list_add_tail(&new_var->list, head);
+
+    return true;
+}
+void vl_del(Vlist *head)
+{
+    if (!head)
+        return;
+    
+    Var *tmp;
+    while (!list_empty(head))
+    {
+        tmp = list_first_entry(head, Var, list);
+        list_del(&tmp->list);
+        free(tmp->vname);
+        free(tmp);
+    }
 }
 
-void il_concat(Ilist **a, Ilist **b)
+bool vl_splice_tail(Vlist *head, Vlist *tail)
 {
-    Ilist *next = NULL;
-    while (*b)
+    if (!head || !tail)
+        return false;
+    
+    list_splice_tail(tail, head);
+    INIT_LIST_HEAD(tail);
+    return true;
+}
+
+void vl_print(Vlist *head)
+{
+    if (!head)
+        return;
+    
+    Vlist *node;
+    list_for_each(node, head)
     {
-        next = (*b)->next;
-        (*b)->next = (*a);
-        (*a) = (*b);
-        (*b) = next;
+        Var *cur = list_entry(node, Var, list);
+        printf("vname = %s, arr_len = %d\n", cur->vname, cur->arr_len);
     }
 }

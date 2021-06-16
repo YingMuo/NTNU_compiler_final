@@ -3,14 +3,12 @@
     #include "vlist.h"
     #include "ilist.h"
 
-    Vlist *vlist_head;
-    Vlist *i_vlist_head;
-    Vlist *f_vlist_head;
-
+    LIST_HEAD(vl_head);
+    LIST_HEAD(i_vl_head);
+    LIST_HEAD(f_vl_head);
     int tmp_val_idx = 1;
 
-    Ilist *ilist_head;
-    Ilist *for_ilist_head;
+    LIST_HEAD(il_head);
 
     char *var_delim = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_&";
     char *arr_lit_delim = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_&[]";
@@ -56,8 +54,10 @@ Start
             char *endline = strchr($1, '\n');
             if (endline)
                 *endline = '\0';
-            printf("START %s\n", $1); 
+            printf("        START %s\n", $1); 
             codegen_var();
+            printf("\n");
+            codegen_ins();
         }
     ;
 
@@ -84,9 +84,11 @@ STMT
             if (type1 == 1 && type2 == 2)
                 yyerror("LVAR ':' '=' EXPR LVAR is int and EXPR is float");
             else if (type1 == 1 && type2 == 1 )
-                printf("I_STORE %s, %s\n", arg1, arg2);
+                // printf("I_STORE %s, %s\n", arg1, arg2);
+                save_ins(NULL, "I_STORE", arg1, arg2, NULL);
             else if (type1 == 2 && type2 & 3)
-                printf("F_STORE %s, %s\n", arg1, arg2);
+                // printf("F_STORE %s, %s\n", arg1, arg2);
+                save_ins(NULL, "F_STORE", arg1, arg2, NULL);
             else
                 yyerror ("LVAR ':' '=' EXPR type error");
         }
@@ -119,9 +121,11 @@ EXPR
             gen_tmp_var(&arg3, type3);
 
             if (type3 == 1)
-                printf("I_ADD %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("I_ADD %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "I_ADD", arg1, arg2, arg3);
             else if (type3 == 2)
-                printf("F_ADD %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("F_ADD %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "F_ADD", arg1, arg2, arg3);
             else
                 yyerror("EXPR '+' EXPR type error");
             $$ = arg3;
@@ -147,9 +151,11 @@ EXPR
             gen_tmp_var(&arg3, type3);
 
             if (type3 == 1)
-                printf("I_SUB %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("I_SUB %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "I_SUB", arg1, arg2, arg3);
             else if (type3 == 2)
-                printf("F_SUB %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("F_SUB %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "F_SUB", arg1, arg2, arg3);
             else
                 yyerror("EXPR '-' EXPR type error");
             $$ = arg3;
@@ -175,9 +181,11 @@ EXPR
             gen_tmp_var(&arg3, type3);
 
             if (type3 == 1)
-                printf("I_MUL %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("I_MUL %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "I_MUL", arg1, arg2, arg3);
             else if (type3 == 2)
-                printf("F_MUL %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("F_MUL %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "F_MUL", arg1, arg2, arg3);
             else
                 yyerror("EXPR '*' EXPR type error");
             $$ = arg3;
@@ -203,9 +211,11 @@ EXPR
             gen_tmp_var(&arg3, type3);
 
             if (type3 == 1)
-                printf("I_DIV %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("I_DIV %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "I_DIV", arg1, arg2, arg3);
             else if (type3 == 2)
-                printf("F_DIV %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("F_DIV %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "F_DIV", arg1, arg2, arg3);
             else
                 yyerror("EXPR '/' EXPR type error");
             $$ = arg3;
@@ -229,9 +239,11 @@ EXPR
             gen_tmp_var(&arg2, type2);
 
             if (type2 == 1)
-                printf("I_UMINUS %s, %s\n", arg1, arg2);
+                // printf("I_UMINUS %s, %s\n", arg1, arg2);
+                save_ins(NULL, "I_UMINUS", arg1, arg2, NULL);
             else if (type2 == 2)
-                printf("F_UMINUS %s, %s\n", arg1, arg2);
+                // printf("F_UMINUS %s, %s\n", arg1, arg2);
+                save_ins(NULL, "F_UMINUS", arg1, arg2, NULL);
             else
                 yyerror("'-' EXPR %prec UMINUS type error");
             $$ = arg2;
@@ -257,14 +269,14 @@ DVAR
         {
             int len = strspn($1, var_delim);
             $1[len] = '\0';
-            save_variable($1, 0);
+            save_var($1, 0);
         }
     |   VNAME '[' INT_LIT ']'
         {
             int len = strspn($1, var_delim);
             $1[len] = '\0';
             int arr_len = atoi($3);
-            save_variable($1, arr_len);
+            save_var($1, arr_len);
         }
     ;
 
@@ -303,57 +315,58 @@ RVAR
     ;
 %%
 // save variable
-void save_variable(char *v_name, int array_len)
+void save_var(char *vname, int arr_len)
 {
-    Variable *tmp = malloc(sizeof(Variable));
-    tmp->v_name = strdup(v_name);
-    tmp->array_len = array_len;
-    vl_push(&vlist_head, tmp);
+    if (!vl_add(&vl_head, vname, arr_len))
+        yyerror("save_var error: vname = %s, arr_len = %d", vname, arr_len);
 }
 
-// print variable
-void print_variable(Vlist *list_head)
-{
-    Vlist *tmp = list_head;
-    while (tmp)
-    {
-        Variable *variable = tmp->variable;
-        printf("VNAME: %s, ARRAY_LEN: %d\n", variable->v_name, variable->array_len);
-        tmp = tmp->next;
-    }
-}
-
-// push vlist to i_vlist_head
+// push vlist to i_vl_head
 void save_type_vlist(int type)
 {
     if (type == 1)
-        vl_concat(&i_vlist_head, &vlist_head);
-    if (type == 2)
-        vl_concat(&f_vlist_head, &vlist_head);
+        vl_splice_tail(&i_vl_head, &vl_head);
+    else if (type == 2)
+        vl_splice_tail(&f_vl_head, &vl_head);
+    else
+    {
+        yyerror("save_type_vlist error: type = %d\n", type);
+        return;
+    }
 }
 
 // code generate variable
 void codegen_var()
 {
-    while (i_vlist_head)
+    Vlist *node = NULL;
+    Vlist *head = NULL;
+
+    head = &i_vl_head;
+    list_for_each(node, head)
     {
-        Variable *variable = vl_pop(&i_vlist_head);
-        if (variable->array_len)
-            printf("Declare %s, Integer_array, %d\n", variable->v_name, variable->array_len);
+        Var *cur = list_entry(node, Var, list);
+        printf("        ");
+        // printf("node = %p, head = %p\n", node, head);
+        if (cur->arr_len)
+            printf("Declare %s, Integer_array, %d\n", cur->vname, cur->arr_len);
         else
-            printf("Declare %s, Integer\n", variable->v_name);
-        free(variable);
+            printf("Declare %s, Integer\n", cur->vname);
     }
 
-    while (f_vlist_head)
+    head = &f_vl_head;
+    list_for_each(node, head)
     {
-        Variable *variable = vl_pop(&f_vlist_head);
-        if (variable->array_len)
-            printf("Declare %s, Float_array, %d\n", variable->v_name, variable->array_len);
+        Var *cur = list_entry(node, Var, list);
+        printf("        ");
+        // printf("node = %p, head = %p\n", node, head);
+        if (cur->arr_len)
+            printf("Declare %s, Float_array, %d\n", cur->vname, cur->arr_len);
         else
-            printf("Declare %s, Float\n", variable->v_name);
-        free(variable);
+            printf("Declare %s, Float\n", cur->vname);
     }
+
+    vl_del(&i_vl_head);
+    vl_del(&f_vl_head);
 }
 
 // split and get main expr to drop redundant
@@ -393,7 +406,7 @@ void gen_tmp_var(char **tmp_var, int type)
     strncat(*tmp_var, num, 6);
     ++tmp_val_idx;
 
-    save_variable(*tmp_var, 0);
+    save_var(*tmp_var, 0);
     save_type_vlist(type);
 }
 
@@ -420,34 +433,73 @@ void get_expr_type(int *type, char *expr)
         // printf("int_lit\n");
     }
 
+    // expr is var
     if (*type == 0)
     {
-        Vlist *tmp = NULL;
-
-        tmp = i_vlist_head;
-        while (tmp)
+        Vlist *node;
+        list_for_each(node, &i_vl_head)
         {
-            Variable *variable = tmp->variable;
-            if (strncmp(expr, variable->v_name, len) == 0)
+            Var *cur = list_entry(node, Var, list);
+            if (strncmp(expr, cur->vname, len) == 0)
             {
                 // printf("catch = %s\n", variable->v_name);
                 *type = 1;
                 return;
             }
-            tmp = tmp->next;
         }
 
-        tmp = f_vlist_head;
-        while (tmp)
+        list_for_each(node, &f_vl_head)
         {
-            Variable *variable = tmp->variable;
-            if (strncmp(expr, variable->v_name, len) == 0)
+            Var *cur = list_entry(node, Var, list);
+            if (strncmp(expr, cur->vname, len) == 0)
             {
                 // printf("catch = %s\n", variable->v_name);
                 *type = 2;
                 return;
             }
-            tmp = tmp->next;
         }
     }
+}
+
+void save_ins(char *label, char *iname, char *arg1, char *arg2, char *arg3)
+{
+    if (!il_add(&il_head, label, iname, arg1, arg2, arg3))
+        yyerror("id_add error: label = %s, iname = %s, arg1 = %s, arg2 = %s, arg3 = %s\n", label, iname, arg1, arg2, arg3);
+}
+
+// code generate variable
+void codegen_ins()
+{
+    Vlist *node = NULL;
+    Vlist *head = NULL;
+
+    head = &il_head;
+    list_for_each(node, head)
+    {
+        Ins *cur = list_entry(node, Ins, list);
+        // printf("node = %p, head = %p\n", node, head);
+        if (cur->label)
+        {
+            printf("%s", cur->label);
+            for (int i = 0; i < 8 - strlen(cur->label); ++i)
+                printf(" ");
+        }
+        else
+        {
+            for (int i = 0; i < 8; ++i)
+                printf(" ");
+        }
+
+        printf("%s ", cur->iname);
+
+        for (int i = 0; i < 3; ++i)
+        {
+            if (cur->arg[i])
+                printf("%s", cur->arg[i]);
+            if (i != 2 &&cur->arg[i+1])
+                printf(", ");
+        }
+        printf("\n");
+    }
+    il_del(&il_head);
 }

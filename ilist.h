@@ -1,19 +1,18 @@
 #pragma once
+#include "list.h"
+#include <stdbool.h>
 
-typedef struct _instr
+typedef struct list_head Ilist;
+
+typedef struct _ins
 {
     char *label;
     char *iname;
     char *arg[3];
-} Instr;
+    Ilist list;
+} Ins;
 
-typedef struct _ilist
-{
-    Instr *instr;
-    struct _ilist *next;
-} Ilist;
-
-void vl_push(Ilist **list_head, Instr *variable);
-Instr *vl_pop(Ilist **list_head);
-void vl_reverse(Ilist **list_head);
-void vl_concat(Ilist **a, Ilist **b);
+bool il_add(Ilist *head, char *label, char *iname, char *arg1, char *arg2, char *arg3);
+void il_del(Ilist *head);
+bool il_splice_tail(Ilist *head, Ilist *tail);
+void il_print(Ilist *head);

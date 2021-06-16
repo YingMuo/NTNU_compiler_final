@@ -70,12 +70,14 @@
 
     #include <string.h>
     #include "vlist.h"
+    #include "ilist.h"
 
-    Vlist *vlist_head;
-    Vlist *i_vlist_head;
-    Vlist *f_vlist_head;
-
+    LIST_HEAD(vl_head);
+    LIST_HEAD(i_vl_head);
+    LIST_HEAD(f_vl_head);
     int tmp_val_idx = 1;
+
+    LIST_HEAD(il_head);
 
     char *var_delim = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_&";
     char *arr_lit_delim = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_&[]";
@@ -87,7 +89,7 @@
     #define INT_LIT_DELIM 4
     #define ARR_LIT_DELIM 8
 
-#line 91 "y.tab.c"
+#line 93 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -165,7 +167,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 22 "parser.y"
+#line 24 "parser.y"
 
     int type;
     char *v_name;
@@ -176,7 +178,7 @@ union YYSTYPE
     char *lvar;
     char *program_name;
 
-#line 180 "y.tab.c"
+#line 182 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -552,9 +554,9 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    50,    50,    61,    62,    66,    70,    92,    93,    97,
-     125,   153,   181,   209,   235,   236,   242,   248,   252,   258,
-     268,   274,   285,   291
+       0,    52,    52,    65,    66,    70,    74,    98,    99,   103,
+     133,   163,   193,   223,   251,   252,   258,   264,   268,   274,
+     284,   290,   301,   307
 };
 #endif
 
@@ -1370,27 +1372,29 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 51 "parser.y"
+#line 53 "parser.y"
         {
             char *endline = strchr((yyvsp[-4].program_name), '\n');
             if (endline)
                 *endline = '\0';
-            printf("START %s\n", (yyvsp[-4].program_name)); 
+            printf("        START %s\n", (yyvsp[-4].program_name)); 
             codegen_var();
+            printf("\n");
+            codegen_ins();
         }
-#line 1382 "y.tab.c"
+#line 1386 "y.tab.c"
     break;
 
   case 5:
-#line 67 "parser.y"
+#line 71 "parser.y"
         {
             save_type_vlist((yyvsp[0].type));
         }
-#line 1390 "y.tab.c"
+#line 1394 "y.tab.c"
     break;
 
   case 6:
-#line 71 "parser.y"
+#line 75 "parser.y"
         {
             char *arg1, *arg2;
             tok_spn(&arg1, (yyvsp[-3].lvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
@@ -1403,17 +1407,19 @@ yyreduce:
             if (type1 == 1 && type2 == 2)
                 yyerror("LVAR ':' '=' EXPR LVAR is int and EXPR is float");
             else if (type1 == 1 && type2 == 1 )
-                printf("I_STORE %s, %s\n", arg1, arg2);
+                // printf("I_STORE %s, %s\n", arg1, arg2);
+                save_ins(NULL, "I_STORE", arg1, arg2, NULL);
             else if (type1 == 2 && type2 & 3)
-                printf("F_STORE %s, %s\n", arg1, arg2);
+                // printf("F_STORE %s, %s\n", arg1, arg2);
+                save_ins(NULL, "F_STORE", arg1, arg2, NULL);
             else
                 yyerror ("LVAR ':' '=' EXPR type error");
         }
-#line 1413 "y.tab.c"
+#line 1419 "y.tab.c"
     break;
 
   case 9:
-#line 98 "parser.y"
+#line 104 "parser.y"
         {
             char *arg1, *arg2, *arg3;
             tok_spn(&arg1, (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
@@ -1434,18 +1440,20 @@ yyreduce:
             gen_tmp_var(&arg3, type3);
 
             if (type3 == 1)
-                printf("I_ADD %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("I_ADD %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "I_ADD", arg1, arg2, arg3);
             else if (type3 == 2)
-                printf("F_ADD %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("F_ADD %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "F_ADD", arg1, arg2, arg3);
             else
                 yyerror("EXPR '+' EXPR type error");
             (yyval.rvar) = arg3;
         }
-#line 1445 "y.tab.c"
+#line 1453 "y.tab.c"
     break;
 
   case 10:
-#line 126 "parser.y"
+#line 134 "parser.y"
         {
             char *arg1, *arg2, *arg3;
             tok_spn(&arg1, (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
@@ -1466,18 +1474,20 @@ yyreduce:
             gen_tmp_var(&arg3, type3);
 
             if (type3 == 1)
-                printf("I_SUB %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("I_SUB %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "I_SUB", arg1, arg2, arg3);
             else if (type3 == 2)
-                printf("F_SUB %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("F_SUB %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "F_SUB", arg1, arg2, arg3);
             else
                 yyerror("EXPR '-' EXPR type error");
             (yyval.rvar) = arg3;
         }
-#line 1477 "y.tab.c"
+#line 1487 "y.tab.c"
     break;
 
   case 11:
-#line 154 "parser.y"
+#line 164 "parser.y"
         {
             char *arg1, *arg2, *arg3;
             tok_spn(&arg1, (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
@@ -1498,18 +1508,20 @@ yyreduce:
             gen_tmp_var(&arg3, type3);
 
             if (type3 == 1)
-                printf("I_MUL %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("I_MUL %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "I_MUL", arg1, arg2, arg3);
             else if (type3 == 2)
-                printf("F_MUL %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("F_MUL %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "F_MUL", arg1, arg2, arg3);
             else
                 yyerror("EXPR '*' EXPR type error");
             (yyval.rvar) = arg3;
         }
-#line 1509 "y.tab.c"
+#line 1521 "y.tab.c"
     break;
 
   case 12:
-#line 182 "parser.y"
+#line 194 "parser.y"
         {
             char *arg1, *arg2, *arg3;
             tok_spn(&arg1, (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
@@ -1530,18 +1542,20 @@ yyreduce:
             gen_tmp_var(&arg3, type3);
 
             if (type3 == 1)
-                printf("I_DIV %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("I_DIV %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "I_DIV", arg1, arg2, arg3);
             else if (type3 == 2)
-                printf("F_DIV %s, %s, %s\n", arg1, arg2, arg3);
+                // printf("F_DIV %s, %s, %s\n", arg1, arg2, arg3);
+                save_ins(NULL, "F_DIV", arg1, arg2, arg3);
             else
                 yyerror("EXPR '/' EXPR type error");
             (yyval.rvar) = arg3;
         }
-#line 1541 "y.tab.c"
+#line 1555 "y.tab.c"
     break;
 
   case 13:
-#line 210 "parser.y"
+#line 224 "parser.y"
         {
             char *arg1, *arg2;
             tok_spn(&arg1, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
@@ -1560,75 +1574,77 @@ yyreduce:
             gen_tmp_var(&arg2, type2);
 
             if (type2 == 1)
-                printf("I_UMINUS %s, %s\n", arg1, arg2);
+                // printf("I_UMINUS %s, %s\n", arg1, arg2);
+                save_ins(NULL, "I_UMINUS", arg1, arg2, NULL);
             else if (type2 == 2)
-                printf("F_UMINUS %s, %s\n", arg1, arg2);
+                // printf("F_UMINUS %s, %s\n", arg1, arg2);
+                save_ins(NULL, "F_UMINUS", arg1, arg2, NULL);
             else
                 yyerror("'-' EXPR %prec UMINUS type error");
             (yyval.rvar) = arg2;
         }
-#line 1571 "y.tab.c"
+#line 1587 "y.tab.c"
     break;
 
   case 14:
-#line 235 "parser.y"
+#line 251 "parser.y"
                              { (yyval.rvar) = (yyvsp[-1].rvar); }
-#line 1577 "y.tab.c"
+#line 1593 "y.tab.c"
     break;
 
   case 15:
-#line 237 "parser.y"
+#line 253 "parser.y"
         {
             int len = strspn((yyvsp[0].num_lit), num_lit_delim);
             (yyvsp[0].num_lit)[len] = '\0';
             (yyval.rvar) = (yyvsp[0].num_lit);
         }
-#line 1587 "y.tab.c"
+#line 1603 "y.tab.c"
     break;
 
   case 16:
-#line 243 "parser.y"
+#line 259 "parser.y"
         {
             int len = strspn((yyvsp[0].int_lit), int_lit_delim);
             (yyvsp[0].int_lit)[len] = '\0';
             (yyval.rvar) = (yyvsp[0].int_lit);
         }
-#line 1597 "y.tab.c"
+#line 1613 "y.tab.c"
     break;
 
   case 18:
-#line 253 "parser.y"
+#line 269 "parser.y"
         {
             int len = strspn((yyvsp[0].v_name), var_delim);
             (yyvsp[0].v_name)[len] = '\0';
-            save_variable((yyvsp[0].v_name), 0);
+            save_var((yyvsp[0].v_name), 0);
         }
-#line 1607 "y.tab.c"
+#line 1623 "y.tab.c"
     break;
 
   case 19:
-#line 259 "parser.y"
+#line 275 "parser.y"
         {
             int len = strspn((yyvsp[-3].v_name), var_delim);
             (yyvsp[-3].v_name)[len] = '\0';
             int arr_len = atoi((yyvsp[-1].int_lit));
-            save_variable((yyvsp[-3].v_name), arr_len);
+            save_var((yyvsp[-3].v_name), arr_len);
         }
-#line 1618 "y.tab.c"
+#line 1634 "y.tab.c"
     break;
 
   case 20:
-#line 269 "parser.y"
+#line 285 "parser.y"
         {
             int len = strspn((yyvsp[0].v_name), var_delim);
             (yyvsp[0].v_name)[len] = '\0';
             (yyval.lvar) = (yyvsp[0].v_name);
         }
-#line 1628 "y.tab.c"
+#line 1644 "y.tab.c"
     break;
 
   case 21:
-#line 275 "parser.y"
+#line 291 "parser.y"
         {
             char *arr_lit, *vname, *size;
             tok_spn(&vname, (yyvsp[-3].v_name), VAR_DELIM);
@@ -1636,21 +1652,21 @@ yyreduce:
             gen_arr_lit(&arr_lit, vname, size);
             (yyval.lvar) = arr_lit;
         }
-#line 1640 "y.tab.c"
+#line 1656 "y.tab.c"
     break;
 
   case 22:
-#line 286 "parser.y"
+#line 302 "parser.y"
         {
             int len = strspn((yyvsp[0].v_name), var_delim);
             (yyvsp[0].v_name)[len] = '\0';
             (yyval.rvar) = (yyvsp[0].v_name);
         }
-#line 1650 "y.tab.c"
+#line 1666 "y.tab.c"
     break;
 
   case 23:
-#line 292 "parser.y"
+#line 308 "parser.y"
         {
             char *arr_lit, *vname, *size;
             tok_spn(&vname, (yyvsp[-3].v_name), VAR_DELIM);
@@ -1658,11 +1674,11 @@ yyreduce:
             gen_arr_lit(&arr_lit, vname, size);
             (yyval.rvar) = arr_lit;
         }
-#line 1662 "y.tab.c"
+#line 1678 "y.tab.c"
     break;
 
 
-#line 1666 "y.tab.c"
+#line 1682 "y.tab.c"
 
       default: break;
     }
@@ -1894,60 +1910,61 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 300 "parser.y"
+#line 316 "parser.y"
 
 // save variable
-void save_variable(char *v_name, int array_len)
+void save_var(char *vname, int arr_len)
 {
-    Variable *tmp = malloc(sizeof(Variable));
-    tmp->v_name = strdup(v_name);
-    tmp->array_len = array_len;
-    vl_push(&vlist_head, tmp);
+    if (!vl_add(&vl_head, vname, arr_len))
+        yyerror("save_var error: vname = %s, arr_len = %d", vname, arr_len);
 }
 
-// print variable
-void print_variable(Vlist *list_head)
-{
-    Vlist *tmp = list_head;
-    while (tmp)
-    {
-        Variable *variable = tmp->variable;
-        printf("VNAME: %s, ARRAY_LEN: %d\n", variable->v_name, variable->array_len);
-        tmp = tmp->next;
-    }
-}
-
-// push vlist to i_vlist_head
+// push vlist to i_vl_head
 void save_type_vlist(int type)
 {
     if (type == 1)
-        vl_concat(&i_vlist_head, &vlist_head);
-    if (type == 2)
-        vl_concat(&f_vlist_head, &vlist_head);
+        vl_splice_tail(&i_vl_head, &vl_head);
+    else if (type == 2)
+        vl_splice_tail(&f_vl_head, &vl_head);
+    else
+    {
+        yyerror("save_type_vlist error: type = %d\n", type);
+        return;
+    }
 }
 
 // code generate variable
 void codegen_var()
 {
-    while (i_vlist_head)
+    Vlist *node = NULL;
+    Vlist *head = NULL;
+
+    head = &i_vl_head;
+    list_for_each(node, head)
     {
-        Variable *variable = vl_pop(&i_vlist_head);
-        if (variable->array_len)
-            printf("Declare %s, Integer_array, %d\n", variable->v_name, variable->array_len);
+        Var *cur = list_entry(node, Var, list);
+        printf("        ");
+        // printf("node = %p, head = %p\n", node, head);
+        if (cur->arr_len)
+            printf("Declare %s, Integer_array, %d\n", cur->vname, cur->arr_len);
         else
-            printf("Declare %s, Integer\n", variable->v_name);
-        free(variable);
+            printf("Declare %s, Integer\n", cur->vname);
     }
 
-    while (f_vlist_head)
+    head = &f_vl_head;
+    list_for_each(node, head)
     {
-        Variable *variable = vl_pop(&f_vlist_head);
-        if (variable->array_len)
-            printf("Declare %s, Float_array, %d\n", variable->v_name, variable->array_len);
+        Var *cur = list_entry(node, Var, list);
+        printf("        ");
+        // printf("node = %p, head = %p\n", node, head);
+        if (cur->arr_len)
+            printf("Declare %s, Float_array, %d\n", cur->vname, cur->arr_len);
         else
-            printf("Declare %s, Float\n", variable->v_name);
-        free(variable);
+            printf("Declare %s, Float\n", cur->vname);
     }
+
+    vl_del(&i_vl_head);
+    vl_del(&f_vl_head);
 }
 
 // split and get main expr to drop redundant
@@ -1987,7 +2004,7 @@ void gen_tmp_var(char **tmp_var, int type)
     strncat(*tmp_var, num, 6);
     ++tmp_val_idx;
 
-    save_variable(*tmp_var, 0);
+    save_var(*tmp_var, 0);
     save_type_vlist(type);
 }
 
@@ -2014,34 +2031,73 @@ void get_expr_type(int *type, char *expr)
         // printf("int_lit\n");
     }
 
+    // expr is var
     if (*type == 0)
     {
-        Vlist *tmp = NULL;
-
-        tmp = i_vlist_head;
-        while (tmp)
+        Vlist *node;
+        list_for_each(node, &i_vl_head)
         {
-            Variable *variable = tmp->variable;
-            if (strncmp(expr, variable->v_name, len) == 0)
+            Var *cur = list_entry(node, Var, list);
+            if (strncmp(expr, cur->vname, len) == 0)
             {
                 // printf("catch = %s\n", variable->v_name);
                 *type = 1;
                 return;
             }
-            tmp = tmp->next;
         }
 
-        tmp = f_vlist_head;
-        while (tmp)
+        list_for_each(node, &f_vl_head)
         {
-            Variable *variable = tmp->variable;
-            if (strncmp(expr, variable->v_name, len) == 0)
+            Var *cur = list_entry(node, Var, list);
+            if (strncmp(expr, cur->vname, len) == 0)
             {
                 // printf("catch = %s\n", variable->v_name);
                 *type = 2;
                 return;
             }
-            tmp = tmp->next;
         }
     }
+}
+
+void save_ins(char *label, char *iname, char *arg1, char *arg2, char *arg3)
+{
+    if (!il_add(&il_head, label, iname, arg1, arg2, arg3))
+        yyerror("id_add error: label = %s, iname = %s, arg1 = %s, arg2 = %s, arg3 = %s\n", label, iname, arg1, arg2, arg3);
+}
+
+// code generate variable
+void codegen_ins()
+{
+    Vlist *node = NULL;
+    Vlist *head = NULL;
+
+    head = &il_head;
+    list_for_each(node, head)
+    {
+        Ins *cur = list_entry(node, Ins, list);
+        // printf("node = %p, head = %p\n", node, head);
+        if (cur->label)
+        {
+            printf("%s", cur->label);
+            for (int i = 0; i < 8 - strlen(cur->label); ++i)
+                printf(" ");
+        }
+        else
+        {
+            for (int i = 0; i < 8; ++i)
+                printf(" ");
+        }
+
+        printf("%s ", cur->iname);
+
+        for (int i = 0; i < 3; ++i)
+        {
+            if (cur->arg[i])
+                printf("%s", cur->arg[i]);
+            if (i != 2 &&cur->arg[i+1])
+                printf(", ");
+        }
+        printf("\n");
+    }
+    il_del(&il_head);
 }
