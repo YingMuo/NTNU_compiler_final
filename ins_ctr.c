@@ -7,6 +7,8 @@
 #include "var_ctr.h"
 
 LIST_HEAD(il_head);
+bool next_label = false;
+int label_idx = 2;
 
 extern char *var_delim; // = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_&";
 extern char *arr_lit_delim; // = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_&[]";
@@ -38,11 +40,29 @@ void get_arg_type(int *type, char *expr)
         get_var_type(type, expr, len);
 }
 
+// generate label
+char *gen_label()
+{
+    char num[7] = {0};
+    sprintf(num, "%d", label_idx/2);
+    char *label = malloc(8);
+    label[0] = 'l';
+    label[1] = 'b';
+    label[2] = '&';
+    strncat(label, num, 7);
+    label[3+strlen(num)] = ':';
+    ++label_idx;
+    return label;
+}
+
 
 // TODO: finish gen_ins
 // generate instruction by codename
 bool gen_ins(INS_CODE code, int arg_len, char *arg[])
 {
+    char *label = next_label ? gen_label() : NULL;
+    next_label = false;
+
     int type[arg_len];
     for (int i = 0; i < arg_len; ++i)
         get_arg_type(&type[i], arg[i]);
@@ -50,16 +70,18 @@ bool gen_ins(INS_CODE code, int arg_len, char *arg[])
     // store
     if (code == INS_STORE)
     {
+        if (arg[1][0] > 'z' || arg[1][0] < 'a' && arg[1][0] > 'Z' || arg[1][0] < 'A')
+            return false;
         if (type[0] == TYPE_INT && type[1] == TYPE_FLOAT)
             return false;
         else if (type[0] == TYPE_INT && type[1] == TYPE_INT )
         {
-            if (!il_add(&il_head, NULL, "I_STORE", 2, arg))
+            if (!il_add(&il_head, label, "I_STORE", 2, arg))
                 return false;
         }
         else if (type[0] == TYPE_FLOAT && type[1] & (TYPE_INT | TYPE_FLOAT))
         {
-            if (!il_add(&il_head, NULL, "F_STORE", 2, arg))
+            if (!il_add(&il_head, label, "F_STORE", 2, arg))
                 return false;
         }
         else
@@ -67,11 +89,58 @@ bool gen_ins(INS_CODE code, int arg_len, char *arg[])
         
         return true;
     }
+
+    // inc
+    if (code == INS_INC)
+    {
+        if (type[0] == TYPE_FLOAT)
+            return false;
+        if (!il_add(&il_head, label, "INC", 1, arg))
+            return false;
+        
+        return true;
+    }
+
+    // compare
+    if (code == INS_CMP)
+    {
+        if (type[0] != type[1])
+            return false;
+        else if (type[0] == TYPE_INT && type[1] == TYPE_INT )
+        {
+            if (!il_add(&il_head, label, "I_CMP", 2, arg))
+                return false;
+        }
+        else if (type[0] == TYPE_FLOAT && type[1] == TYPE_FLOAT)
+        {
+            if (!il_add(&il_head, label, "F_CMP", 2, arg))
+                return false;
+        }
+        else
+            return false;
+        
+        return true;
+    }
+
+    // jmp less than
+    if (code == INS_JL)
+    {
+        if (!il_add(&il_head, label, "JL", 1, arg))
+            return false;
+        
+        return true;
+    }
+
+    if (label)
+        free(label);
 }
 
 // generate instruction by codename but it will generate a new value as new argument and return it
 char *gen_ins_t(INS_T_CODE code, int arg_len, char *arg[])
 {
+    char *label = next_label ? gen_label() : NULL;
+    next_label = false;
+
     int type[arg_len];
     char *new_arg[arg_len+1];
     for (int i = 0; i < arg_len; ++i)
@@ -81,7 +150,7 @@ char *gen_ins_t(INS_T_CODE code, int arg_len, char *arg[])
     }
 
     int new_type = 0;
-    
+
     // arithmetic
     if (code == INS_ADD || code == INS_SUB || code == INS_MUL || code == INS_DIV )
     {
@@ -100,12 +169,12 @@ char *gen_ins_t(INS_T_CODE code, int arg_len, char *arg[])
         {
             if (new_type == TYPE_INT)
             {
-                if (!il_add(&il_head, NULL, "I_ADD", arg_len+1, new_arg))
+                if (!il_add(&il_head, label, "I_ADD", arg_len+1, new_arg))
                     return false;
             }
             else if (new_type == TYPE_FLOAT)
             {
-                if (!il_add(&il_head, NULL, "F_ADD", arg_len+1, new_arg))
+                if (!il_add(&il_head, label, "F_ADD", arg_len+1, new_arg))
                     return false;
             }
             else
@@ -117,12 +186,12 @@ char *gen_ins_t(INS_T_CODE code, int arg_len, char *arg[])
         {
             if (new_type == TYPE_INT)
             {
-                if (!il_add(&il_head, NULL, "I_SUB", arg_len+1, new_arg))
+                if (!il_add(&il_head, label, "I_SUB", arg_len+1, new_arg))
                     return false;
             }
             else if (new_type == TYPE_FLOAT)
             {
-                if (!il_add(&il_head, NULL, "F_SUB", arg_len+1, new_arg))
+                if (!il_add(&il_head, label, "F_SUB", arg_len+1, new_arg))
                     return false;
             }
             else
@@ -134,12 +203,12 @@ char *gen_ins_t(INS_T_CODE code, int arg_len, char *arg[])
         {
             if (new_type == TYPE_INT)
             {
-                if (!il_add(&il_head, NULL, "I_MUL", arg_len+1, new_arg))
+                if (!il_add(&il_head, label, "I_MUL", arg_len+1, new_arg))
                     return false;
             }
             else if (new_type == TYPE_FLOAT)
             {
-                if (!il_add(&il_head, NULL, "F_MUL", arg_len+1, new_arg))
+                if (!il_add(&il_head, label, "F_MUL", arg_len+1, new_arg))
                     return false;
             }
             else
@@ -151,12 +220,12 @@ char *gen_ins_t(INS_T_CODE code, int arg_len, char *arg[])
         {
             if (new_type == TYPE_INT)
             {
-                if (!il_add(&il_head, NULL, "I_DIV", arg_len+1, new_arg))
+                if (!il_add(&il_head, label, "I_DIV", arg_len+1, new_arg))
                     return false;
             }
             else if (new_type == TYPE_FLOAT)
             {
-                if (!il_add(&il_head, NULL, "F_DIV", arg_len+1, new_arg))
+                if (!il_add(&il_head, label, "F_DIV", arg_len+1, new_arg))
                     return false;
             }
             else
@@ -181,12 +250,12 @@ char *gen_ins_t(INS_T_CODE code, int arg_len, char *arg[])
 
         if (new_type == TYPE_INT)
         {
-            if (!il_add(&il_head, NULL, "I_UMINUS", arg_len+1, new_arg))
+            if (!il_add(&il_head, label, "I_UMINUS", arg_len+1, new_arg))
                 return false;
         }
         else if (new_type == TYPE_FLOAT)
         {
-            if (!il_add(&il_head, NULL, "F_UMINUS", arg_len+1, new_arg))
+            if (!il_add(&il_head, label, "F_UMINUS", arg_len+1, new_arg))
                 return false;
         }
         else
@@ -194,6 +263,8 @@ char *gen_ins_t(INS_T_CODE code, int arg_len, char *arg[])
         
         return new_arg[arg_len];
     }
+    if (label)
+        free(label);
 }
 
 // code generate instruction

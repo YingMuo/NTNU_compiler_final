@@ -4,6 +4,7 @@ Program testP
 Begin
     declare I, E, F, G as integer;
     declare A,B,C,D, LLL[100] as float;
-    A:=(-LLL[I]+B)*D-C+100+100.11+E;
-    I:=E+F+G/I;
+    FOR (I:=1 TO 100)
+        A:=-LLL[I]+B*D-C;
+    ENDFOR
 End

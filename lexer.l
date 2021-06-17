@@ -2,20 +2,29 @@
 #include "y.tab.h"
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+int line = 1;
 %}
 
 %%
-\%\%.*\n  ;
-[\t\n ]+        /* ignore whitespace */ ;
+\%\%.*\n  { ++line; };
+[\t ]+        /* ignore whitespace */ ;
+\n { ++line; }
 [Pp][Rr][Oo][Gg][Rr][Aa][Mm][ ][A-Za-z0-9._-]+\n {
+    ++line;
     yylval.program_name = &yytext[8];
-    return Program_name;
+    return PROG_NAME;
     }
 [Bb][Ee][Gg][Ii][Nn] { return Begin; }
 [Ee][Nn][Dd] {return End;}
 
 [Dd][Ee][Cc][Ll][Aa][Rr][Ee] { return DECLARE; }
 [Aa][Ss] { return AS; }
+
+[Ff][Oo][Rr] { return FOR; }
+[Ee][Nn][Dd][Ff][Oo][Rr] { return ENDFOR; }
+[Tt][Oo] { return TO; }
 
 [Ii][Nn][Tt][Ee][Gg][Ee][Rr] { yylval.type=1; return TYPE; }
 [Ff][Ll][Oo][Aa][Tt] { yylval.type=2; return TYPE; }
