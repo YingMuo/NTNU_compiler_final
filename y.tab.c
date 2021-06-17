@@ -71,18 +71,9 @@
     #include <string.h>
     #include "var_ctr.h"
     #include "ins_ctr.h"
+    #include "tok_spn.h"
 
-    char *var_delim = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_&";
-    char *arr_lit_delim = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_&[]";
-    char *num_lit_delim = "0123456789.";
-    char *int_lit_delim = "0123456789";
-
-    #define VAR_DELIM 1
-    #define NUM_LIT_DELIM 2
-    #define INT_LIT_DELIM 4
-    #define ARR_LIT_DELIM 8
-
-#line 86 "y.tab.c"
+#line 77 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -160,7 +151,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 17 "parser.y"
+#line 8 "parser.y"
 
     int type;
     char *v_name;
@@ -171,7 +162,7 @@ union YYSTYPE
     char *lvar;
     char *program_name;
 
-#line 175 "y.tab.c"
+#line 166 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -545,11 +536,11 @@ static const yytype_int8 yytranslate[] =
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_int16 yyrline[] =
+static const yytype_uint8 yyrline[] =
 {
-       0,    45,    45,    58,    59,    63,    67,    89,    90,    94,
-     122,   150,   178,   206,   232,   233,   239,   245,   249,   256,
-     267,   273,   284,   290
+       0,    36,    36,    50,    51,    55,    59,    71,    72,    76,
+      87,    98,   109,   120,   130,   131,   137,   143,   147,   154,
+     165,   171,   182,   188
 };
 #endif
 
@@ -1365,7 +1356,7 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 46 "parser.y"
+#line 37 "parser.y"
         {
             char *endline = strchr((yyvsp[-4].program_name), '\n');
             if (endline)
@@ -1374,260 +1365,167 @@ yyreduce:
             codegen_var();
             printf("\n");
             codegen_ins();
+            printf("        HALT %s\n", (yyvsp[-4].program_name)); 
+        }
+#line 1371 "y.tab.c"
+    break;
+
+  case 5:
+#line 56 "parser.y"
+        {
+            save_type_vlist((yyvsp[0].type));
         }
 #line 1379 "y.tab.c"
     break;
 
-  case 5:
-#line 64 "parser.y"
-        {
-            save_type_vlist((yyvsp[0].type));
-        }
-#line 1387 "y.tab.c"
-    break;
-
   case 6:
-#line 68 "parser.y"
+#line 60 "parser.y"
         {
-            char *arg1, *arg2;
-            tok_spn(&arg1, (yyvsp[-3].lvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            tok_spn(&arg2, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+            char *arg[2];
+            tok_spn(&arg[0], (yyvsp[-3].lvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+            tok_spn(&arg[1], (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
 
-            int type1 = 0, type2 = 0;
-            get_expr_type(&type1, arg1);
-            get_expr_type(&type2, arg2);
-
-            if (type1 == 1 && type2 == 2)
-                yyerror("LVAR ':' '=' EXPR LVAR is int and EXPR is float");
-            else if (type1 == 1 && type2 == 1 )
-                save_ins(NULL, "I_STORE", arg1, arg2, NULL);
-            else if (type1 == 2 && type2 & 3)
-                save_ins(NULL, "F_STORE", arg1, arg2, NULL);
-            else
-                yyerror ("LVAR ':' '=' EXPR type error");
+            if (!gen_ins(INS_STORE, 2, arg))
+                yyerror("LVAR ':' '=' EXPR");
         }
-#line 1410 "y.tab.c"
+#line 1392 "y.tab.c"
     break;
 
   case 9:
-#line 95 "parser.y"
+#line 77 "parser.y"
         {
-            char *arg1, *arg2, *arg3;
-            tok_spn(&arg1, (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            tok_spn(&arg2, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+            char *arg[2];
+            tok_spn(&arg[0], (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+            tok_spn(&arg[1], (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
 
-            int type1 = 0, type2 = 0, type3 = 0;
-            get_expr_type(&type1, arg1);
-            get_expr_type(&type2, arg2);
-
-            if (!type1 || !type2)
+            char *new_arg = gen_ins_t(INS_ADD, 2, arg);
+            if (!new_arg)
                 yyerror("EXPR '+' EXPR type error");
-            
-            if ((type1 | type2) & 2)
-                type3 = 2;
-            else if (type1 & type2 == 1)
-                type3 = 1;
-            
-            gen_tmp_var(&arg3, type3);
-
-            if (type3 == 1)
-                save_ins(NULL, "I_ADD", arg1, arg2, arg3);
-            else if (type3 == 2)
-                save_ins(NULL, "F_ADD", arg1, arg2, arg3);
-            else
-                yyerror("EXPR '+' EXPR type error");
-            (yyval.rvar) = arg3;
+            (yyval.rvar) = new_arg;
         }
-#line 1442 "y.tab.c"
+#line 1407 "y.tab.c"
     break;
 
   case 10:
-#line 123 "parser.y"
+#line 88 "parser.y"
         {
-            char *arg1, *arg2, *arg3;
-            tok_spn(&arg1, (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            tok_spn(&arg2, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+            char *arg[2];
+            tok_spn(&arg[0], (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+            tok_spn(&arg[1], (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
 
-            int type1 = 0, type2 = 0, type3 = 0;
-            get_expr_type(&type1, arg1);
-            get_expr_type(&type2, arg2);
-
-            if (!type1 || !type2)
+            char *new_arg = gen_ins_t(INS_SUB, 2, arg);
+            if (!new_arg)
                 yyerror("EXPR '-' EXPR type error");
-            
-            if ((type1 | type2) & 2)
-                type3 = 2;
-            else if (type1 & type2 == 1)
-                type3 = 1;
-            
-            gen_tmp_var(&arg3, type3);
-
-            if (type3 == 1)
-                save_ins(NULL, "I_SUB", arg1, arg2, arg3);
-            else if (type3 == 2)
-                save_ins(NULL, "F_SUB", arg1, arg2, arg3);
-            else
-                yyerror("EXPR '-' EXPR type error");
-            (yyval.rvar) = arg3;
+            (yyval.rvar) = new_arg;
         }
-#line 1474 "y.tab.c"
+#line 1422 "y.tab.c"
     break;
 
   case 11:
-#line 151 "parser.y"
+#line 99 "parser.y"
         {
-            char *arg1, *arg2, *arg3;
-            tok_spn(&arg1, (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            tok_spn(&arg2, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+            char *arg[2];
+            tok_spn(&arg[0], (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+            tok_spn(&arg[1], (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
 
-            int type1 = 0, type2 = 0, type3 = 0;
-            get_expr_type(&type1, arg1);
-            get_expr_type(&type2, arg2);
-
-            if (!type1 || !type2)
+            char *new_arg = gen_ins_t(INS_MUL, 2, arg);
+            if (!new_arg)
                 yyerror("EXPR '*' EXPR type error");
-            
-            if ((type1 | type2) & 2)
-                type3 = 2;
-            else if (type1 & type2 == 1)
-                type3 = 1;
-            
-            gen_tmp_var(&arg3, type3);
-
-            if (type3 == 1)
-                save_ins(NULL, "I_MUL", arg1, arg2, arg3);
-            else if (type3 == 2)
-                save_ins(NULL, "F_MUL", arg1, arg2, arg3);
-            else
-                yyerror("EXPR '*' EXPR type error");
-            (yyval.rvar) = arg3;
+            (yyval.rvar) = new_arg;
         }
-#line 1506 "y.tab.c"
+#line 1437 "y.tab.c"
     break;
 
   case 12:
-#line 179 "parser.y"
+#line 110 "parser.y"
         {
-            char *arg1, *arg2, *arg3;
-            tok_spn(&arg1, (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
-            tok_spn(&arg2, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+            char *arg[2];
+            tok_spn(&arg[0], (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+            tok_spn(&arg[1], (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
 
-            int type1 = 0, type2 = 0, type3 = 0;
-            get_expr_type(&type1, arg1);
-            get_expr_type(&type2, arg2);
-
-            if (!type1 || !type2)
+            char *new_arg = gen_ins_t(INS_DIV, 2, arg);
+            if (!new_arg)
                 yyerror("EXPR '/' EXPR type error");
-            
-            if ((type1 | type2) & 2)
-                type3 = 2;
-            else if (type1 & type2 == 1)
-                type3 = 1;
-            
-            gen_tmp_var(&arg3, type3);
-
-            if (type3 == 1)
-                save_ins(NULL, "I_DIV", arg1, arg2, arg3);
-            else if (type3 == 2)
-                save_ins(NULL, "F_DIV", arg1, arg2, arg3);
-            else
-                yyerror("EXPR '/' EXPR type error");
-            (yyval.rvar) = arg3;
+            (yyval.rvar) = new_arg;
         }
-#line 1538 "y.tab.c"
+#line 1452 "y.tab.c"
     break;
 
   case 13:
-#line 207 "parser.y"
+#line 121 "parser.y"
         {
-            char *arg1, *arg2;
-            tok_spn(&arg1, (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
+            char *arg[1];
+            tok_spn(&arg[0], (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
 
-            int type1 = 0, type2 = 0;
-            get_expr_type(&type1, arg1);
-
-            if (!type1)
-                yyerror("'-' EXPR %prec UMINUS type error");
-            
-            if (type1 & 2)
-                type2 = 2;
-            else if (type1 & 1)
-                type2 = 1;
-            
-            gen_tmp_var(&arg2, type2);
-
-            if (type2 == 1)
-                save_ins(NULL, "I_UMINUS", arg1, arg2, NULL);
-            else if (type2 == 2)
-                save_ins(NULL, "F_UMINUS", arg1, arg2, NULL);
-            else
-                yyerror("'-' EXPR %prec UMINUS type error");
-            (yyval.rvar) = arg2;
+            char *new_arg = gen_ins_t(INS_UMINUS, 1, arg);
+            if (!new_arg)
+                yyerror("'-' EXPR %prec UMINUS error");
+            (yyval.rvar) = new_arg;
         }
-#line 1568 "y.tab.c"
+#line 1466 "y.tab.c"
     break;
 
   case 14:
-#line 232 "parser.y"
+#line 130 "parser.y"
                              { (yyval.rvar) = (yyvsp[-1].rvar); }
-#line 1574 "y.tab.c"
+#line 1472 "y.tab.c"
     break;
 
   case 15:
-#line 234 "parser.y"
+#line 132 "parser.y"
         {
-            int len = strspn((yyvsp[0].num_lit), num_lit_delim);
-            (yyvsp[0].num_lit)[len] = '\0';
-            (yyval.rvar) = (yyvsp[0].num_lit);
+            char *num_lit;
+            tok_spn(&num_lit, (yyvsp[0].num_lit), NUM_LIT_DELIM);
+            (yyval.rvar) = num_lit;
         }
-#line 1584 "y.tab.c"
+#line 1482 "y.tab.c"
     break;
 
   case 16:
-#line 240 "parser.y"
+#line 138 "parser.y"
         {
-            int len = strspn((yyvsp[0].int_lit), int_lit_delim);
-            (yyvsp[0].int_lit)[len] = '\0';
-            (yyval.rvar) = (yyvsp[0].int_lit);
+            char *int_lit;
+            tok_spn(&int_lit, (yyvsp[0].int_lit), INT_LIT_DELIM);
+            (yyval.rvar) = int_lit;
         }
-#line 1594 "y.tab.c"
+#line 1492 "y.tab.c"
     break;
 
   case 18:
-#line 250 "parser.y"
+#line 148 "parser.y"
         {
-            int len = strspn((yyvsp[0].v_name), var_delim);
-            (yyvsp[0].v_name)[len] = '\0';
-            if (!save_var((yyvsp[0].v_name), 0))
+            char *vname;
+            tok_spn(&vname, (yyvsp[0].v_name), VAR_DELIM);
+            if (!save_var(vname, 0))
                 yyerror("save_var error");
         }
-#line 1605 "y.tab.c"
+#line 1503 "y.tab.c"
     break;
 
   case 19:
-#line 257 "parser.y"
+#line 155 "parser.y"
         {
-            int len = strspn((yyvsp[-3].v_name), var_delim);
-            (yyvsp[-3].v_name)[len] = '\0';
+            char *vname;
+            tok_spn(&vname, (yyvsp[-3].v_name), VAR_DELIM);
             int arr_len = atoi((yyvsp[-1].int_lit));
-            if (!save_var((yyvsp[-3].v_name), arr_len))
+            if (!save_var(vname, arr_len))
                 yyerror("save_var error");
         }
-#line 1617 "y.tab.c"
+#line 1515 "y.tab.c"
     break;
 
   case 20:
-#line 268 "parser.y"
+#line 166 "parser.y"
         {
-            int len = strspn((yyvsp[0].v_name), var_delim);
-            (yyvsp[0].v_name)[len] = '\0';
-            (yyval.lvar) = (yyvsp[0].v_name);
+            char *vname;
+            tok_spn(&vname, (yyvsp[0].v_name), VAR_DELIM);
+            (yyval.lvar) = vname;
         }
-#line 1627 "y.tab.c"
+#line 1525 "y.tab.c"
     break;
 
   case 21:
-#line 274 "parser.y"
+#line 172 "parser.y"
         {
             char *arr_lit, *vname, *size;
             tok_spn(&vname, (yyvsp[-3].v_name), VAR_DELIM);
@@ -1635,21 +1533,21 @@ yyreduce:
             gen_arr_lit(&arr_lit, vname, size);
             (yyval.lvar) = arr_lit;
         }
-#line 1639 "y.tab.c"
+#line 1537 "y.tab.c"
     break;
 
   case 22:
-#line 285 "parser.y"
+#line 183 "parser.y"
         {
-            int len = strspn((yyvsp[0].v_name), var_delim);
-            (yyvsp[0].v_name)[len] = '\0';
-            (yyval.rvar) = (yyvsp[0].v_name);
+            char *vname;
+            tok_spn(&vname, (yyvsp[0].v_name), VAR_DELIM);
+            (yyval.rvar) = vname;
         }
-#line 1649 "y.tab.c"
+#line 1547 "y.tab.c"
     break;
 
   case 23:
-#line 291 "parser.y"
+#line 189 "parser.y"
         {
             char *arr_lit, *vname, *size;
             tok_spn(&vname, (yyvsp[-3].v_name), VAR_DELIM);
@@ -1657,11 +1555,11 @@ yyreduce:
             gen_arr_lit(&arr_lit, vname, size);
             (yyval.rvar) = arr_lit;
         }
-#line 1661 "y.tab.c"
+#line 1559 "y.tab.c"
     break;
 
 
-#line 1665 "y.tab.c"
+#line 1563 "y.tab.c"
 
       default: break;
     }
@@ -1893,48 +1791,5 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 299 "parser.y"
+#line 197 "parser.y"
 
-// split and get main expr to drop redundant
-void tok_spn(char **token, char *origin, int delim)
-{
-    *token = origin;
-    int len = 0;
-    if (delim & VAR_DELIM)
-        len = (len >= strspn(origin, var_delim)) ? len : strspn(origin, var_delim);
-    if (delim & INT_LIT_DELIM)
-        len = (len >= strspn(origin, int_lit_delim)) ? len : strspn(origin, int_lit_delim);
-    if (delim & NUM_LIT_DELIM)
-        len = (len >= strspn(origin, num_lit_delim)) ? len : strspn(origin, num_lit_delim);
-    if (delim & ARR_LIT_DELIM)
-        len = (len >= strspn(origin, arr_lit_delim)) ? len : strspn(origin, arr_lit_delim);
-    *(*token+len) = '\0';
-}
-
-void get_expr_type(int *type, char *expr)
-{
-    // printf("expr = %s\n", expr);
-    int len = 0;
-    if (len <= strspn(expr, var_delim))
-    {
-        len = strspn(expr, var_delim);
-        *type = 0;
-        // printf("var\n");
-    }
-    if (len <= strspn(expr, num_lit_delim))
-    {
-        len = strspn(expr, num_lit_delim);
-        *type = 2;
-        // printf("num_lit\n");
-    }
-    if (len <= strspn(expr, int_lit_delim))
-    {
-        len = strspn(expr, int_lit_delim);
-        *type = 1;
-        // printf("int_lit\n");
-    }
-
-    // expr is var
-    if (*type == 0)
-        get_var_type(type, expr, len);
-}

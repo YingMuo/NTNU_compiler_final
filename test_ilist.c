@@ -11,13 +11,21 @@ int main(void)
     INIT_LIST_HEAD(&head1);
     INIT_LIST_HEAD(&head2);
     INIT_LIST_HEAD(&head3);
-    il_add(&head2, NULL, "F_UMINUS", "LLL[I]", "T&I", NULL);
-    il_add(&head2, NULL, "F_ADD", "T&1", "B", "T&2");
-    il_add(&head2, NULL, "F_MUL", "T&2", "D", "T&3");
-    il_add(&head1, NULL, "F_SUB", "T&3", "C", "T&4");
-    il_add(&head1, NULL, "F_ADD", "T&4", "100", "T&5");
-    il_add(&head1, NULL, "F_ADD", "T&5", "100.11", "T&6");
-    il_add(&head3, NULL, "F_STORE", "A", "T&6", NULL);
+    char *arg[3];
+    arg[0] = "LLL[I]"; arg[1] = "T&I";
+    il_add(&head2, NULL, "F_UMINUS", 2, arg);
+    arg[0] = "T&1"; arg[1] = "B"; arg[2] = "T&2";
+    il_add(&head2, NULL, "F_ADD", 3, arg);
+    arg[0] = "T&2"; arg[1] = "D"; arg[2] = "T&3";
+    il_add(&head2, NULL, "F_MUL", 3, arg);
+    arg[0] = "T&3"; arg[1] = "C"; arg[2] = "T&4";
+    il_add(&head1, NULL, "F_SUB", 3, arg);
+    arg[0] = "T&4"; arg[1] = "100"; arg[2] = "T&5";
+    il_add(&head1, NULL, "F_ADD", 3, arg);
+    arg[0] = "T&5"; arg[1] = "100.11"; arg[2] = "T&6";
+    il_add(&head1, NULL, "F_ADD", 3, arg);
+    arg[0] = "A"; arg[1] = "T&6";
+    il_add(&head3, NULL, "F_STORE", 2, arg);
 
     il_print(&head1);
     printf("\n");

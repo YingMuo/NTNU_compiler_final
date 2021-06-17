@@ -1,11 +1,12 @@
 all:
 	lex lexer.l
 	yacc -d parser.y
-	gcc -g -c vlist.c
-	gcc -g -c ilist.c
-	gcc -g -c var_ctr.c
-	gcc -g -c ins_ctr.c
-	gcc -g lex.yy.c y.tab.c vlist.o ilist.o var_ctr.o ins_ctr.o -ly -lfl -o final
+	gcc -c vlist.c
+	gcc -c ilist.c
+	gcc -c var_ctr.c
+	gcc -c ins_ctr.c
+	gcc -c tok_spn.c
+	gcc lex.yy.c y.tab.c vlist.o ilist.o var_ctr.o ins_ctr.o tok_spn.o -ly -lfl -o final
 
 clean:
 	rm final test_vlist test_ilist

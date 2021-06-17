@@ -18,9 +18,9 @@ bool save_var(char *vname, int arr_len)
 // push vlist to i_vl_head
 void save_type_vlist(int type)
 {
-    if (type == 1)
+    if (type == TYPE_INT)
         vl_splice_tail(&i_vl_head, &vl_head);
-    else if (type == 2)
+    else if (type == TYPE_FLOAT)
         vl_splice_tail(&f_vl_head, &vl_head);
     else
     {
@@ -39,7 +39,6 @@ void codegen_var()
     {
         Var *cur = list_entry(node, Var, list);
         printf("        ");
-        // printf("node = %p, head = %p\n", node, head);
         if (cur->arr_len)
             printf("Declare %s, Integer_array, %d\n", cur->vname, cur->arr_len);
         else
@@ -51,7 +50,6 @@ void codegen_var()
     {
         Var *cur = list_entry(node, Var, list);
         printf("        ");
-        // printf("node = %p, head = %p\n", node, head);
         if (cur->arr_len)
             printf("Declare %s, Float_array, %d\n", cur->vname, cur->arr_len);
         else
@@ -96,8 +94,7 @@ void get_var_type(int *type, char *name, int len)
         Var *cur = list_entry(node, Var, list);
         if (strncmp(name, cur->vname, len) == 0)
         {
-            // printf("catch = %s\n", variable->v_name);
-            *type = 1;
+            *type = TYPE_INT;
             return;
         }
     }
@@ -107,8 +104,7 @@ void get_var_type(int *type, char *name, int len)
         Var *cur = list_entry(node, Var, list);
         if (strncmp(name, cur->vname, len) == 0)
         {
-            // printf("catch = %s\n", variable->v_name);
-            *type = 2;
+            *type = TYPE_FLOAT;
             return;
         }
     }

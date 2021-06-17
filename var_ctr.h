@@ -1,5 +1,11 @@
 #include "vlist.h"
 
+typedef enum _VAR_TYPE
+{
+    TYPE_INT = 1,
+    TYPE_FLOAT = 2
+} VAR_TYPE;
+
 // save variable
 bool save_var(char *vname, int arr_len);
 

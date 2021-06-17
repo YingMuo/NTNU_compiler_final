@@ -6,9 +6,9 @@ typedef struct list_head Vlist;
 
 typedef struct _var
 {
+    Vlist list;
     char *vname;
     int arr_len;
-    Vlist list;
 } Var;
 
 bool vl_add(Vlist *head, char *vname, int arr_len);
