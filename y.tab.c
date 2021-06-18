@@ -76,8 +76,6 @@
     #include "tok_spn.h"
 
     extern int line;
-    char *label_if = NULL;
-    char *label_else = NULL;
 
     typedef struct _arg_list
     {
@@ -87,10 +85,11 @@
 
     int yyerror(char *msg)
     {
-        printf("%d: %s\n", line, msg);
+        printf("error: %d: %s\n", line, msg);
+        exit(EXIT_FAILURE);
     }
 
-#line 94 "y.tab.c"
+#line 93 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -188,7 +187,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 25 "parser.y"
+#line 24 "parser.y"
 
     int type;
     char *v_name;
@@ -203,7 +202,7 @@ union YYSTYPE
     int logic_op;
     struct _arg_list *arg_list;
 
-#line 207 "y.tab.c"
+#line 206 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -580,10 +579,10 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    65,    65,    78,    91,    92,    96,   101,   110,   131,
-     137,   143,   157,   173,   224,   253,   261,   272,   283,   294,
-     305,   316,   326,   327,   333,   339,   343,   344,   349,   356,
-     367,   373,   384,   390
+       0,    64,    64,    77,    90,    91,    95,   100,   109,   130,
+     136,   142,   156,   172,   223,   252,   260,   271,   282,   293,
+     304,   315,   325,   326,   332,   338,   342,   343,   348,   355,
+     366,   372,   383,   389
 };
 #endif
 
@@ -1432,7 +1431,7 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 66 "parser.y"
+#line 65 "parser.y"
         {
             char *endline = strchr((yyvsp[-3].program_name), '\n');
             if (endline)
@@ -1441,13 +1440,13 @@ yyreduce:
             arg[0] = (yyvsp[-3].program_name);
             if (!gen_ins(INS_HALT, 1, arg))
                 yyerror("generate start instruction wrong");
-            codegen_ins();
+            gen_ins_dec(0);
         }
-#line 1447 "y.tab.c"
+#line 1446 "y.tab.c"
     break;
 
   case 3:
-#line 79 "parser.y"
+#line 78 "parser.y"
         {
             char *endline = strchr((yyvsp[0].program_name), '\n');
             if (endline)
@@ -1457,20 +1456,20 @@ yyreduce:
             if (!gen_ins(INS_START, 1, arg))
                 yyerror("generate halt instruction wrong");
         }
-#line 1461 "y.tab.c"
+#line 1460 "y.tab.c"
     break;
 
   case 6:
-#line 97 "parser.y"
+#line 96 "parser.y"
         {
             gen_ins_dec((yyvsp[-1].type));
             save_type_vlist((yyvsp[-1].type));
         }
-#line 1470 "y.tab.c"
+#line 1469 "y.tab.c"
     break;
 
   case 7:
-#line 102 "parser.y"
+#line 101 "parser.y"
         {
             char *arg[2];
             tok_spn(&arg[0], (yyvsp[-1].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
@@ -1479,11 +1478,11 @@ yyreduce:
             if (!gen_ins(INS_STORE, 2, arg))
                 yyerror("assignment");
         }
-#line 1483 "y.tab.c"
+#line 1482 "y.tab.c"
     break;
 
   case 8:
-#line 111 "parser.y"
+#line 110 "parser.y"
         {
             char *arg_inc[1];
             tok_spn(&arg_inc[0], (yyvsp[-3].for_init_arg)[0], VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
@@ -1504,31 +1503,31 @@ yyreduce:
             if (!gen_ins(INS_JL, 1, arg_jl))
                 yyerror("generate jl instruction wrong");
         }
-#line 1508 "y.tab.c"
+#line 1507 "y.tab.c"
     break;
 
   case 9:
-#line 132 "parser.y"
+#line 131 "parser.y"
         {
             char *label;
             tok_spn(&label, (yyvsp[-4].label), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
             next_label = label;
         }
-#line 1518 "y.tab.c"
+#line 1517 "y.tab.c"
     break;
 
   case 10:
-#line 138 "parser.y"
+#line 137 "parser.y"
         {
             char *label;
             tok_spn(&label, (yyvsp[-3].label), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
             next_label = label;
         }
-#line 1528 "y.tab.c"
+#line 1527 "y.tab.c"
     break;
 
   case 11:
-#line 144 "parser.y"
+#line 143 "parser.y"
         {
             int arg_len = (yyvsp[-2].arg_list)->arg_len+1;
             char *arg[arg_len];
@@ -1539,11 +1538,11 @@ yyreduce:
             if (!gen_ins(INS_CALL, arg_len, arg))
                 yyerror("generate call instruction wrong");
         }
-#line 1543 "y.tab.c"
+#line 1542 "y.tab.c"
     break;
 
   case 12:
-#line 158 "parser.y"
+#line 157 "parser.y"
         {
             char *arg[1];
             arg[0] = gen_label();
@@ -1556,11 +1555,11 @@ yyreduce:
 
             (yyval.label) = arg[0];
         }
-#line 1560 "y.tab.c"
+#line 1559 "y.tab.c"
     break;
 
   case 13:
-#line 174 "parser.y"
+#line 173 "parser.y"
         {
             char *arg_cmp[2];
             tok_spn(&arg_cmp[0], (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
@@ -1607,11 +1606,11 @@ yyreduce:
 
             (yyval.label) = arg_jmp[0];
         }
-#line 1611 "y.tab.c"
+#line 1610 "y.tab.c"
     break;
 
   case 14:
-#line 225 "parser.y"
+#line 224 "parser.y"
         {
             char *arg[2];
             tok_spn(&arg[0], (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
@@ -1637,11 +1636,11 @@ yyreduce:
             (yyval.for_init_arg)[1] = to_arg;
             (yyval.for_init_arg)[2] = next_label;
         }
-#line 1641 "y.tab.c"
+#line 1640 "y.tab.c"
     break;
 
   case 15:
-#line 254 "parser.y"
+#line 253 "parser.y"
         {
             Alist *arg_list = malloc(sizeof(Alist));
             arg_list->arg_len = 1;
@@ -1649,11 +1648,11 @@ yyreduce:
             tok_spn(&arg_list->arg[arg_list->arg_len - 1], (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
             (yyval.arg_list) = arg_list;
         }
-#line 1653 "y.tab.c"
+#line 1652 "y.tab.c"
     break;
 
   case 16:
-#line 262 "parser.y"
+#line 261 "parser.y"
         {
             Alist *arg_list = (yyvsp[0].arg_list);
             ++arg_list->arg_len;
@@ -1661,11 +1660,11 @@ yyreduce:
             tok_spn(&arg_list->arg[arg_list->arg_len - 1], (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
             (yyval.arg_list) = arg_list;
         }
-#line 1665 "y.tab.c"
+#line 1664 "y.tab.c"
     break;
 
   case 17:
-#line 273 "parser.y"
+#line 272 "parser.y"
         {
             char *arg[2];
             tok_spn(&arg[0], (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
@@ -1676,11 +1675,11 @@ yyreduce:
                 yyerror("a + b error");
             (yyval.rvar) = new_arg;
         }
-#line 1680 "y.tab.c"
+#line 1679 "y.tab.c"
     break;
 
   case 18:
-#line 284 "parser.y"
+#line 283 "parser.y"
         {
             char *arg[2];
             tok_spn(&arg[0], (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
@@ -1691,11 +1690,11 @@ yyreduce:
                 yyerror("a - b error");
             (yyval.rvar) = new_arg;
         }
-#line 1695 "y.tab.c"
+#line 1694 "y.tab.c"
     break;
 
   case 19:
-#line 295 "parser.y"
+#line 294 "parser.y"
         {
             char *arg[2];
             tok_spn(&arg[0], (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
@@ -1706,11 +1705,11 @@ yyreduce:
                 yyerror("a * b error");
             (yyval.rvar) = new_arg;
         }
-#line 1710 "y.tab.c"
+#line 1709 "y.tab.c"
     break;
 
   case 20:
-#line 306 "parser.y"
+#line 305 "parser.y"
         {
             char *arg[2];
             tok_spn(&arg[0], (yyvsp[-2].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
@@ -1721,11 +1720,11 @@ yyreduce:
                 yyerror("a / b error");
             (yyval.rvar) = new_arg;
         }
-#line 1725 "y.tab.c"
+#line 1724 "y.tab.c"
     break;
 
   case 21:
-#line 317 "parser.y"
+#line 316 "parser.y"
         {
             char *arg[1];
             tok_spn(&arg[0], (yyvsp[0].rvar), VAR_DELIM | NUM_LIT_DELIM | INT_LIT_DELIM | ARR_LIT_DELIM);
@@ -1735,48 +1734,48 @@ yyreduce:
                 yyerror("-a error");
             (yyval.rvar) = new_arg;
         }
-#line 1739 "y.tab.c"
+#line 1738 "y.tab.c"
     break;
 
   case 22:
-#line 326 "parser.y"
+#line 325 "parser.y"
                              { (yyval.rvar) = (yyvsp[-1].rvar); }
-#line 1745 "y.tab.c"
+#line 1744 "y.tab.c"
     break;
 
   case 23:
-#line 328 "parser.y"
+#line 327 "parser.y"
         {
             char *num_lit;
             tok_spn(&num_lit, (yyvsp[0].num_lit), NUM_LIT_DELIM);
             (yyval.rvar) = num_lit;
         }
-#line 1755 "y.tab.c"
+#line 1754 "y.tab.c"
     break;
 
   case 24:
-#line 334 "parser.y"
+#line 333 "parser.y"
         {
             char *int_lit;
             tok_spn(&int_lit, (yyvsp[0].int_lit), INT_LIT_DELIM);
             (yyval.rvar) = int_lit;
         }
-#line 1765 "y.tab.c"
+#line 1764 "y.tab.c"
     break;
 
   case 28:
-#line 350 "parser.y"
+#line 349 "parser.y"
         {
             char *vname;
             tok_spn(&vname, (yyvsp[0].v_name), VAR_DELIM);
             if (!save_var(vname, 0))
                 yyerror("save_var error");
         }
-#line 1776 "y.tab.c"
+#line 1775 "y.tab.c"
     break;
 
   case 29:
-#line 357 "parser.y"
+#line 356 "parser.y"
         {
             char *vname;
             tok_spn(&vname, (yyvsp[-3].v_name), VAR_DELIM);
@@ -1784,21 +1783,21 @@ yyreduce:
             if (!save_var(vname, arr_len))
                 yyerror("save_var error");
         }
-#line 1788 "y.tab.c"
+#line 1787 "y.tab.c"
     break;
 
   case 30:
-#line 368 "parser.y"
+#line 367 "parser.y"
         {
             char *vname;
             tok_spn(&vname, (yyvsp[0].v_name), VAR_DELIM);
             (yyval.lvar) = vname;
         }
-#line 1798 "y.tab.c"
+#line 1797 "y.tab.c"
     break;
 
   case 31:
-#line 374 "parser.y"
+#line 373 "parser.y"
         {
             char *arr_lit, *vname, *size;
             tok_spn(&vname, (yyvsp[-3].v_name), VAR_DELIM);
@@ -1806,21 +1805,21 @@ yyreduce:
             gen_arr_lit(&arr_lit, vname, size);
             (yyval.lvar) = arr_lit;
         }
-#line 1810 "y.tab.c"
+#line 1809 "y.tab.c"
     break;
 
   case 32:
-#line 385 "parser.y"
+#line 384 "parser.y"
         {
             char *vname;
             tok_spn(&vname, (yyvsp[0].v_name), VAR_DELIM);
             (yyval.rvar) = vname;
         }
-#line 1820 "y.tab.c"
+#line 1819 "y.tab.c"
     break;
 
   case 33:
-#line 391 "parser.y"
+#line 390 "parser.y"
         {
             char *arr_lit, *vname, *size;
             tok_spn(&vname, (yyvsp[-3].v_name), VAR_DELIM);
@@ -1828,11 +1827,11 @@ yyreduce:
             gen_arr_lit(&arr_lit, vname, size);
             (yyval.rvar) = arr_lit;
         }
-#line 1832 "y.tab.c"
+#line 1831 "y.tab.c"
     break;
 
 
-#line 1836 "y.tab.c"
+#line 1835 "y.tab.c"
 
       default: break;
     }
@@ -2064,5 +2063,5 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 399 "parser.y"
+#line 398 "parser.y"
 

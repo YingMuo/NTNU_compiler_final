@@ -1,0 +1,14 @@
+%%the beginning of an test data for Micro/Ex
+Program testP
+Begin
+    declare I, E, F as integer;
+    declare A,B,C,D, LLL[100] as float;
+    FOR (I:= F + E TO 5 * 5)
+        A:=-LLL[I]+B*D-C;
+    ENDFOR
+    IF (A + 10>=10000.0 / 87.0) THEN
+        print(A+3.14);
+    ELSE
+        print(2,1.4);
+    ENDIF
+End

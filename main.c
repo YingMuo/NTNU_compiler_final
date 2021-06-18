@@ -38,11 +38,12 @@ int main(int argc, char *argv[])
     if (!yyin)
         fprintf(stderr, "cannot access %s: No such file or directory\n", argv[optind]);
 
-    output_file = fopen(output_name ? output_name : "a.out", "w");
+    yyparse();
+
+    output_file = fopen(output_name ? output_name : "out.S", "w");
     if (!output_file)
         fprintf(stderr, "get output file error");
 
-    yyparse();
     codegen_ins();
 
     return 0;

@@ -10,7 +10,7 @@ all:
 	gcc lex.yy.c y.tab.c vlist.o ilist.o var_ctr.o ins_ctr.o tok_spn.o main.o -ly -lfl -o compiler
 
 clean:
-	rm compiler *.o
+	rm compiler *.o *.S
 
 test_vlist:
 	gcc -g -c vlist.c

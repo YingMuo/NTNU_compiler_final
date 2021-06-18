@@ -82,7 +82,10 @@ void gen_tmp_var(char **tmp_var, int type)
     ++tmp_val_idx;
 
     save_var(*tmp_var, 0);
-    save_type_vlist(type);
+    if (type == TYPE_INT)
+        vl_add(&i_vl_head, *tmp_var, 0);
+    else if (type == TYPE_FLOAT)
+        vl_add(&f_vl_head, *tmp_var, 0);
 }
 
 // get type from name of variable 

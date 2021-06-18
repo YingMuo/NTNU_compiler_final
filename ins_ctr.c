@@ -81,9 +81,12 @@ bool gen_ins_dec(int type)
             return false;
         arg[0] = cur->vname;
 
-        if (type == TYPE_INT)
+        int new_type;
+        if (type == 0)
+            get_var_type(&new_type, cur->vname, strlen(cur->vname));
+        if (type == TYPE_INT || new_type == TYPE_INT)
             arg[1] = cur->arr_len ? "Integer_array" : "Integer";
-        else if (type == TYPE_FLOAT)
+        else if (type == TYPE_FLOAT || new_type == TYPE_FLOAT)
             arg[1] = cur->arr_len ? "Float_array" : "Float";
         else
             return false;
@@ -104,7 +107,6 @@ bool gen_ins_dec(int type)
     return true;
 }
 
-// TODO: finish gen_ins
 // generate instruction by codename
 bool gen_ins(INS_CODE code, int arg_len, char *arg[])
 {

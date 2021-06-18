@@ -7,8 +7,6 @@
     #include "tok_spn.h"
 
     extern int line;
-    char *label_if = NULL;
-    char *label_else = NULL;
 
     typedef struct _arg_list
     {
@@ -18,7 +16,8 @@
 
     int yyerror(char *msg)
     {
-        printf("%d: %s\n", line, msg);
+        printf("error: %d: %s\n", line, msg);
+        exit(EXIT_FAILURE);
     }
 %}
 
@@ -71,7 +70,7 @@ Start
             arg[0] = $1;
             if (!gen_ins(INS_HALT, 1, arg))
                 yyerror("generate start instruction wrong");
-            codegen_ins();
+            gen_ins_dec(0);
         }
     ;
 PROG_INIT_STMT
