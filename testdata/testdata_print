@@ -1,0 +1,8 @@
+%%the beginning of an test data for Micro/Ex
+Program testP
+
+Begin
+    declare I, E, F, G as integer;
+    declare A,B,C,D, LLL[100] as float;
+    print(100+100-100, B+A-C, 333, 123, 456);
+End

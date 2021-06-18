@@ -26,8 +26,22 @@ int line = 1;
 [Ee][Nn][Dd][Ff][Oo][Rr] { return ENDFOR; }
 [Tt][Oo] { return TO; }
 
+[Ii][Ff] { return IF; }
+[Tt][Hh][Ee][Nn] { return THEN; }
+[Ee][Nn][Dd][Ii][Ff] { return ENDIF; }
+[Ee][Ll][Ss][Ee] { return ELSE; }
+
 [Ii][Nn][Tt][Ee][Gg][Ee][Rr] { yylval.type=1; return TYPE; }
 [Ff][Ll][Oo][Aa][Tt] { yylval.type=2; return TYPE; }
+
+print { return print; }
+
+\> { yylval.logic_op = 1; return LOGIC_OP; }
+\>= { yylval.logic_op = 2; return LOGIC_OP; }
+== { yylval.logic_op = 3; return LOGIC_OP; }
+\!= { yylval.logic_op = 4; return LOGIC_OP; }
+\< { yylval.logic_op = 5; return LOGIC_OP; }
+\<= { yylval.logic_op = 6; return LOGIC_OP; }
 
 [0-9]+\.[0-9]* {
     yylval.num_lit = yytext;

@@ -1,13 +1,22 @@
 #include "ilist.h"
 
-extern bool next_label;
+extern char *next_label;
 
 typedef enum _INS_CODE
 {
+    INS_START,
+    INS_HALT,
     INS_STORE,
     INS_INC,
     INS_CMP,
+    INS_J,
+    INS_JG,
+    INS_JGE,
+    INS_JE,
+    INS_JNE,
+    INS_JLE,
     INS_JL,
+    INS_CALL,
 } INS_CODE;
 
 typedef enum _INS_T_CODE
@@ -19,11 +28,25 @@ typedef enum _INS_T_CODE
     INS_DIV
 } INS_T_CODE;
 
+typedef enum _LOGIC_OP
+{
+    LOP_G = 1,
+    LOP_GE = 2,
+    LOP_E = 3,
+    LOP_NE = 4,
+    LOP_L = 5,
+    LOP_LE = 6,
+    LOP_TOTAL = 7
+} LOP;
+
 // get the type of expr
 void get_arg_type(int *type, char *expr);
 
 // generate label
 char *gen_label();
+
+int get_lop_rev(int lop);
+bool gen_ins_dec(int type);
 
 // generate instruction by codename and save it to ilist
 bool gen_ins(INS_CODE code, int arg_len, char *arg[]);

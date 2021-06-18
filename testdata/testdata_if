@@ -4,7 +4,8 @@ Program testP
 Begin
     declare I, E, F, G as integer;
     declare A,B,C,D, LLL[100] as float;
-    FOR (I:=1 TO 100)
-        A:=-LLL[I]+B*D-C;
-    ENDFOR
+    IF (A>=10000.0) THEN
+        A := I;
+    ENDIF
+
 End

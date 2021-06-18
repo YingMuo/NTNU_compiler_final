@@ -64,7 +64,7 @@ void codegen_var()
 void gen_arr_lit(char **arr_lit, char *vname, char *size)
 {
     *arr_lit = strdup(vname);
-    realloc(*arr_lit, strlen(vname)+strlen(size)+1);
+    *arr_lit = realloc(*arr_lit, strlen(vname)+strlen(size)+1);
     strcat(*arr_lit, "[");
     strcat(*arr_lit, size);
     strcat(*arr_lit, "]");

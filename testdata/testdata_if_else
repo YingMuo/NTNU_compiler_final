@@ -1,0 +1,16 @@
+%%the beginning of an test data for Micro/Ex
+Program testP
+
+Begin
+    declare I, E, F, G as integer;
+    declare A,B,C,D, LLL[100] as float;
+    IF (A!=20000.0) THEN
+        A := C;
+    ENDIF
+    IF (A>=10000.0) THEN
+        A := I;
+    ELSE
+        A := B;
+    ENDIF
+
+End

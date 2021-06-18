@@ -6,10 +6,11 @@ all:
 	gcc -c var_ctr.c
 	gcc -c ins_ctr.c
 	gcc -c tok_spn.c
-	gcc lex.yy.c y.tab.c vlist.o ilist.o var_ctr.o ins_ctr.o tok_spn.o -ly -lfl -o final
+	gcc -c main.c
+	gcc lex.yy.c y.tab.c vlist.o ilist.o var_ctr.o ins_ctr.o tok_spn.o main.o -ly -lfl -o compiler
 
 clean:
-	rm final test_vlist test_ilist
+	rm compiler *.o
 
 test_vlist:
 	gcc -g -c vlist.c

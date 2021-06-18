@@ -55,14 +55,21 @@ extern int yydebug;
     PROG_NAME = 261,
     INT_LIT = 262,
     NUM_LIT = 263,
-    Begin = 264,
-    End = 265,
-    DECLARE = 266,
-    AS = 267,
-    TO = 268,
-    FOR = 269,
-    ENDFOR = 270,
-    UMINUS = 271
+    LOGIC_OP = 264,
+    Begin = 265,
+    End = 266,
+    DECLARE = 267,
+    AS = 268,
+    TO = 269,
+    FOR = 270,
+    ENDFOR = 271,
+    IF = 272,
+    THEN = 273,
+    ELSE = 274,
+    ENDIF = 275,
+    print = 276,
+    UMINUS = 277,
+    IFX = 278
   };
 #endif
 /* Tokens.  */
@@ -72,20 +79,27 @@ extern int yydebug;
 #define PROG_NAME 261
 #define INT_LIT 262
 #define NUM_LIT 263
-#define Begin 264
-#define End 265
-#define DECLARE 266
-#define AS 267
-#define TO 268
-#define FOR 269
-#define ENDFOR 270
-#define UMINUS 271
+#define LOGIC_OP 264
+#define Begin 265
+#define End 266
+#define DECLARE 267
+#define AS 268
+#define TO 269
+#define FOR 270
+#define ENDFOR 271
+#define IF 272
+#define THEN 273
+#define ELSE 274
+#define ENDIF 275
+#define print 276
+#define UMINUS 277
+#define IFX 278
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 14 "parser.y"
+#line 25 "parser.y"
 
     int type;
     char *v_name;
@@ -96,8 +110,11 @@ union YYSTYPE
     char *lvar;
     char *program_name;
     char *for_init_arg[3];
+    char *label;
+    int logic_op;
+    struct _arg_list *arg_list;
 
-#line 101 "y.tab.h"
+#line 118 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
